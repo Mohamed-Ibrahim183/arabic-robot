@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets / local config
+.env
+.env.*
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local model weights (download separately)
+models/
+
+# Generated audio / benchmark outputs
+audio/
+output/
+outputs/
+results/
+*.wav
+*.mp3
+*.flac
+
+# Chatterbox is cloned separately (see README); keep local install out of this repo
+Chatterbox-TTS-Server/

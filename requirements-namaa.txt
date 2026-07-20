@@ -1,0 +1,19 @@
+# NAMAA Egyptian TTS extras (keeps your existing CUDA PyTorch).
+#
+# Install with:
+#   pip install --no-deps chatterbox-tts
+#   pip install -r requirements-namaa.txt
+#
+# Do NOT run a plain `pip install chatterbox-tts` — that pins torch==2.6.0
+# and can break VoiceTut / CUDA 12.8 in this environment.
+
+resemble-perth>=1.0.0
+s3tokenizer
+conformer==0.3.2
+diffusers==0.29.0
+safetensors>=0.5.3
+pykakasi==2.3.0
+spacy-pkuseg
+pyloudnorm
+omegaconf
+librosa==0.11.0
