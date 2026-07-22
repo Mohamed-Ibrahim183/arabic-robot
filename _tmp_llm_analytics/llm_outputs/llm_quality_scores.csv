@@ -1,0 +1,5 @@
+﻿model,prompt_id,category,priority,auto_pass,overall_score,language_score,correctness_score,instruction_following_score,conciseness_score,tts_suitability_score,tool_accuracy,valid_json,first_token_seconds,tokens_per_second,auto_failures
+Qwen3-4B-Instruct-2507,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.6178,11.98,
+Qwen3-8B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.3031,3.763,
+ALLaM-7B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.4292,4.292,
+Nile-Chat-4B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.5385,8.903,

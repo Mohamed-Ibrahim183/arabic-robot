@@ -1,0 +1,5 @@
+﻿model,model_id,load_mode,ok_runs,success_rate_percent,avg_first_token_seconds,avg_tokens_per_second,avg_generate_seconds,avg_load_seconds,peak_vram_mb,peak_ram_mb,model_vram_mb,score_latency,score_throughput,score_vram_efficiency,score_load,score_balanced,score_robot_realtime,rank_robot,rank_ttft,rank_throughput
+Qwen3-4B-Instruct-2507,Qwen/Qwen3-4B-Instruct-2507,bf16,1,100.0,0.618,11.98,2.588,174.68,8430.2,5571.9,7878.0,91.02,100.0,77.14,100.0,91.59,92.53,1,2,1
+Nile-Chat-4B,MBZUAI-Paris/Nile-Chat-4B,bf16,1,100.0,0.538,8.9,2.696,184.85,8148.2,5002.7,7596.0,100.0,62.53,80.92,95.22,81.64,85.42,2,1,2
+Qwen3-8B,Qwen/Qwen3-8B,int4,1,100.0,1.303,3.76,2.126,387.37,6722.2,5255.4,6170.0,14.14,0.0,100.0,0.0,29.24,21.36,3,3,4
+ALLaM-7B,ALLaM-AI/ALLaM-7B-Instruct-preview,bf16,1,100.0,1.429,4.29,2.097,324.8,14194.2,5123.5,13642.0,0.0,6.45,0.0,29.42,5.2,4.88,4,4,3

@@ -1,0 +1,8 @@
+﻿model,category,runs,ok,success_rate_percent,avg_first_token_seconds,avg_generate_seconds,avg_tokens_per_second,avg_completion_tokens,avg_response_chars
+Qwen3-4B-Instruct-2507,egyptian_arabic,1,1,100.0,0.618,2.588,11.98,31.0,81.0
+Qwen3-8B,egyptian_arabic,1,1,100.0,1.303,2.126,3.76,8.0,18.0
+Gemma3-4B-IT,general,1,0,0.0,,,,,
+Gemma3-12B-IT,general,1,0,0.0,,,,,
+ALLaM-7B,egyptian_arabic,1,1,100.0,1.429,2.097,4.29,9.0,30.0
+Jais-2-8B,general,1,0,0.0,,,,,
+Nile-Chat-4B,egyptian_arabic,1,1,100.0,0.538,2.696,8.9,24.0,72.0

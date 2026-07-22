@@ -21,16 +21,18 @@ Usage on Kaggle:
        %run /kaggle/working/kaggle_arabic_llm_compare.py --no-install
      Run specific models:
        %run /kaggle/working/kaggle_arabic_llm_compare.py --only Qwen3-8B,ALLaM-7B,Jais-2-8B
-     Skip heavy ones:
-       %run /kaggle/working/kaggle_arabic_llm_compare.py --skip Qwen3-14B,Gemma3-12B-IT
+     Skip other heavy ones:
+       %run /kaggle/working/kaggle_arabic_llm_compare.py --skip Gemma3-12B-IT
+     Opt in to 14B (needs enough RAM; can kill single-T4 Colab sessions):
+       %run /kaggle/working/kaggle_arabic_llm_compare.py --only Qwen3-14B
      Force dependency install on Colab / custom WORK_DIR:
        %run .../kaggle_arabic_llm_compare.py --install
 
 After the run finishes, a zip of all llm_outputs is written next to the output folder.
 Notes for T4 / T4x2:
   - Checkpoints live on /kaggle/tmp and are purged between models (working disk is small).
-  - Qwen3-30B-A3B and Mistral-24B are OFF by default (~45–65 GB downloads fill temp disk,
-    which previously caused worker exit -7 / SIGBUS and then Errno 5 spawning python).
+  - Qwen3-14B, Qwen3-30B-A3B and Mistral-24B are OFF by default (14B RAM-spikes the
+    runtime; 24B/30B ~45–65 GB downloads fill temp disk → worker exit -7 / SIGBUS).
 
 Outputs:
   /kaggle/working/llm_outputs/responses/<model>/<prompt_id>.txt
@@ -143,7 +145,7 @@ ENABLE = {
     # User-requested core set
     "Qwen3-4B-Instruct-2507": True,
     "Qwen3-8B": True,
-    "Qwen3-14B": True,
+    "Qwen3-14B": False,  # ~30GB download + RAM spike; kills single-T4 Colab/Kaggle sessions
     "Qwen3-30B-A3B-Instruct-2507": False,  # ~60GB download; enable with --only if you have disk headroom
     "Gemma3-4B-IT": True,
     "Gemma3-12B-IT": True,

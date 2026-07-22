@@ -1,0 +1,775 @@
+{
+  "output_dir": "/content/kaggle_working/llm_outputs",
+  "response_dir": "/content/kaggle_working/llm_outputs/responses",
+  "gpu_count": 1,
+  "gpus": [
+    {
+      "index": 0,
+      "name": "Tesla T4",
+      "total_mb": 14912.7,
+      "free_mb": 14807.8
+    }
+  ],
+  "prompts_file": "/content/kaggle_working/llm_inputs/prompts.json",
+  "suite": "first",
+  "dataset_source": "fallback",
+  "system": "You are the conversational assistant for an Arabic voice robot.\n\nRespond in concise, natural Egyptian Arabic unless the user requests another language or style.\nUse English only for common technical terms, product names, or when the user uses English.\nPut the direct answer first.\nAvoid Markdown tables, long headings, URLs, emojis, and unnecessary introductions.\nKeep ordinary answers under two short sentences unless more detail is required.\nResolve clear self-corrections using the user's latest value.\nDo not invent missing information.\nAsk one short clarification only when a required value is missing.\nFor tool calls, return valid arguments that exactly match the provided schema.\nNever claim that an action succeeded before receiving a successful tool result.\nProtect private information and refuse unsafe or unauthorized requests.",
+  "prompt_count": 1,
+  "models": [
+    "Qwen3-4B-Instruct-2507",
+    "Qwen3-8B",
+    "Gemma3-4B-IT",
+    "Gemma3-12B-IT",
+    "ALLaM-7B",
+    "Jais-2-8B",
+    "Nile-Chat-4B"
+  ],
+  "max_new_tokens": 256,
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "runs": [
+    {
+      "status": "ok",
+      "model": "Qwen3-4B-Instruct-2507",
+      "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+      "role": "Small multilingual Apache-2.0 baseline",
+      "load": {
+        "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+        "load_mode": "bf16",
+        "dtype": "bfloat16",
+        "device_map": "auto",
+        "n_gpu": 1,
+        "hf_auth": false,
+        "load_seconds": 174.676,
+        "max_memory": {
+          "0": 15032385536,
+          "cpu": 8589934592
+        }
+      },
+      "runs": [
+        {
+          "status": "ok",
+          "model": "Qwen3-4B-Instruct-2507",
+          "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+          "role": "Small multilingual Apache-2.0 baseline",
+          "prompt_id": "A001",
+          "category": "egyptian_arabic",
+          "priority": "critical",
+          "user": "عامل إيه النهارده؟",
+          "response_file": "/content/kaggle_working/llm_outputs/responses/Qwen3-4B-Instruct-2507/A001.txt",
+          "eval_file": "/content/kaggle_working/llm_outputs/responses/Qwen3-4B-Instruct-2507/A001.eval.json",
+          "load_seconds": 174.676,
+          "load_mode": "bf16",
+          "dtype": "bfloat16",
+          "device": "cuda",
+          "prompt_text": "<|im_start|>system\nYou are the conversational assistant for an Arabic voice robot.\n\nRespond in concise, natural Egyptian Arabic unless the user requests another language or style.\nUse English only for common technical terms, product names, or when the user uses English.\nPut the direct answer first.\nAvoid Markdown tables, long headings, URLs, emojis, and unnecessary introductions.\nKeep ordinary answers under two short sentences unless more detail is required.\nResolve clear self-corrections using the user's latest value.\nDo not invent missing information.\nAsk one short clarification only when a required value is missing.\nFor tool calls, return valid arguments that exactly match the provided schema.\nNever claim that an action succeeded before receiving a successful tool result.\nProtect private information and refuse unsafe or unauthorized requests.<|im_end|>\n<|im_start|>user\nعامل إيه النهارده؟<|im_end|>\n<|im_start|>assistant\n",
+          "response_text": "النهارده عامل تبادل معلومات، معلومات عن المدن، أو معلومات عن الأحداث. ماذا تريده؟",
+          "prompt_tokens": 169,
+          "completion_tokens": 31,
+          "total_tokens": 200,
+          "response_chars": 81,
+          "first_token_seconds": 0.6178,
+          "generate_seconds": 2.5877,
+          "tokens_per_second": 11.98,
+          "max_new_tokens": 256,
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "auto_pass": true,
+          "auto_failures": [],
+          "auto_notes": [],
+          "valid_json": null,
+          "parsed_tool": null,
+          "language_score": 5,
+          "correctness_score": 5,
+          "instruction_following_score": 5,
+          "conciseness_score": 5,
+          "tts_suitability_score": 5,
+          "tool_accuracy": null,
+          "overall_score": 5.0,
+          "sentence_count": 2
+        }
+      ],
+      "quality": {
+        "prompts_ok": 1,
+        "auto_pass": 1,
+        "auto_pass_rate": 1.0,
+        "avg_overall_score": 5.0
+      },
+      "resources": {
+        "samples": 372,
+        "peak_cpu_percent": 141.5,
+        "avg_cpu_percent": 35.0,
+        "peak_ram_mb": 5571.9,
+        "avg_ram_mb": 1686.1,
+        "peak_sys_ram_mb": 3991.3,
+        "avg_sys_ram_mb": 3707.8,
+        "peak_sys_ram_percent": 33.4,
+        "avg_sys_ram_percent": 31.2,
+        "peak_gpu_util_percent": 100.0,
+        "avg_gpu_util_percent": 1.9,
+        "peak_vram_mb": 8430.2,
+        "avg_vram_mb": 2097.8,
+        "baseline_vram_mb": 552.2,
+        "model_vram_mb": 7878.0,
+        "gpu_name": "Tesla T4"
+      },
+      "wall_seconds": 192.93,
+      "gpu_index": 0,
+      "disk_after": {
+        "total_gb": 112.64,
+        "used_gb": 54.72,
+        "free_gb": 57.9
+      },
+      "cache_purged_gb": 15.01
+    },
+    {
+      "status": "ok",
+      "model": "Qwen3-8B",
+      "model_id": "Qwen/Qwen3-8B",
+      "role": "Main production quality/speed candidate",
+      "load": {
+        "model_id": "Qwen/Qwen3-8B",
+        "load_mode": "int4",
+        "dtype": "bfloat16",
+        "device_map": "auto",
+        "n_gpu": 1,
+        "hf_auth": false,
+        "load_seconds": 387.374,
+        "max_memory": {
+          "0": 15032385536,
+          "cpu": 8589934592
+        }
+      },
+      "runs": [
+        {
+          "status": "ok",
+          "model": "Qwen3-8B",
+          "model_id": "Qwen/Qwen3-8B",
+          "role": "Main production quality/speed candidate",
+          "prompt_id": "A001",
+          "category": "egyptian_arabic",
+          "priority": "critical",
+          "user": "عامل إيه النهارده؟",
+          "response_file": "/content/kaggle_working/llm_outputs/responses/Qwen3-8B/A001.txt",
+          "eval_file": "/content/kaggle_working/llm_outputs/responses/Qwen3-8B/A001.eval.json",
+          "load_seconds": 387.374,
+          "load_mode": "int4",
+          "dtype": "bfloat16",
+          "device": "cuda",
+          "prompt_text": "<|im_start|>system\nYou are the conversational assistant for an Arabic voice robot.\n\nRespond in concise, natural Egyptian Arabic unless the user requests another language or style.\nUse English only for common technical terms, product names, or when the user uses English.\nPut the direct answer first.\nAvoid Markdown tables, long headings, URLs, emojis, and unnecessary introductions.\nKeep ordinary answers under two short sentences unless more detail is required.\nResolve clear self-corrections using the user's latest value.\nDo not invent missing information.\nAsk one short clarification only when a required value is missing.\nFor tool calls, return valid arguments that exactly match the provided schema.\nNever claim that an action succeeded before receiving a successful tool result.\nProtect private information and refuse unsafe or unauthorized requests.<|im_end|>\n<|im_start|>user\nعامل إيه النهارده؟<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+          "response_text": "النهارده عمله إيه؟",
+          "prompt_tokens": 173,
+          "completion_tokens": 8,
+          "total_tokens": 181,
+          "response_chars": 18,
+          "first_token_seconds": 1.3031,
+          "generate_seconds": 2.1261,
+          "tokens_per_second": 3.763,
+          "max_new_tokens": 256,
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "auto_pass": true,
+          "auto_failures": [],
+          "auto_notes": [],
+          "valid_json": null,
+          "parsed_tool": null,
+          "language_score": 5,
+          "correctness_score": 5,
+          "instruction_following_score": 5,
+          "conciseness_score": 5,
+          "tts_suitability_score": 5,
+          "tool_accuracy": null,
+          "overall_score": 5.0,
+          "sentence_count": 1
+        }
+      ],
+      "quality": {
+        "prompts_ok": 1,
+        "auto_pass": 1,
+        "auto_pass_rate": 1.0,
+        "avg_overall_score": 5.0
+      },
+      "resources": {
+        "samples": 784,
+        "peak_cpu_percent": 143.0,
+        "avg_cpu_percent": 32.8,
+        "peak_ram_mb": 5255.4,
+        "avg_ram_mb": 1785.7,
+        "peak_sys_ram_mb": 4035.8,
+        "avg_sys_ram_mb": 3826.5,
+        "peak_sys_ram_percent": 33.8,
+        "avg_sys_ram_percent": 32.1,
+        "peak_gpu_util_percent": 100.0,
+        "avg_gpu_util_percent": 1.5,
+        "peak_vram_mb": 6722.2,
+        "avg_vram_mb": 1656.9,
+        "baseline_vram_mb": 552.2,
+        "model_vram_mb": 6170.0,
+        "gpu_name": "Tesla T4"
+      },
+      "wall_seconds": 409.89,
+      "gpu_index": 0,
+      "disk_after": {
+        "total_gb": 112.64,
+        "used_gb": 62.49,
+        "free_gb": 50.13
+      },
+      "cache_purged_gb": 30.54
+    },
+    {
+      "status": "error",
+      "model": "Gemma3-4B-IT",
+      "model_id": "google/gemma-3-4b-it",
+      "error": "Gated model google/gemma-3-4b-it requires HF auth. Accept the license on Hugging Face, then set HF_TOKEN (Kaggle Secrets / Colab Secrets / env) and re-run.",
+      "runs": [],
+      "skipped": true,
+      "disk": {
+        "total_gb": 112.64,
+        "used_gb": 47.21,
+        "free_gb": 65.41
+      }
+    },
+    {
+      "status": "error",
+      "model": "Gemma3-12B-IT",
+      "model_id": "google/gemma-3-12b-it",
+      "error": "Gated model google/gemma-3-12b-it requires HF auth. Accept the license on Hugging Face, then set HF_TOKEN (Kaggle Secrets / Colab Secrets / env) and re-run.",
+      "runs": [],
+      "skipped": true,
+      "disk": {
+        "total_gb": 112.64,
+        "used_gb": 47.21,
+        "free_gb": 65.41
+      }
+    },
+    {
+      "status": "ok",
+      "model": "ALLaM-7B",
+      "model_id": "ALLaM-AI/ALLaM-7B-Instruct-preview",
+      "role": "Arabic-specialized bilingual (SDAIA)",
+      "load": {
+        "model_id": "ALLaM-AI/ALLaM-7B-Instruct-preview",
+        "load_mode": "bf16",
+        "dtype": "bfloat16",
+        "device_map": "auto",
+        "n_gpu": 1,
+        "hf_auth": false,
+        "load_seconds": 324.804,
+        "max_memory": {
+          "0": 15032385536,
+          "cpu": 8589934592
+        }
+      },
+      "runs": [
+        {
+          "status": "ok",
+          "model": "ALLaM-7B",
+          "model_id": "ALLaM-AI/ALLaM-7B-Instruct-preview",
+          "role": "Arabic-specialized bilingual (SDAIA)",
+          "prompt_id": "A001",
+          "category": "egyptian_arabic",
+          "priority": "critical",
+          "user": "عامل إيه النهارده؟",
+          "response_file": "/content/kaggle_working/llm_outputs/responses/ALLaM-7B/A001.txt",
+          "eval_file": "/content/kaggle_working/llm_outputs/responses/ALLaM-7B/A001.eval.json",
+          "load_seconds": 324.804,
+          "load_mode": "bf16",
+          "dtype": "bfloat16",
+          "device": "cuda",
+          "prompt_text": "<s> [INST] <<SYS>>\nYou are the conversational assistant for an Arabic voice robot.\n\nRespond in concise, natural Egyptian Arabic unless the user requests another language or style.\nUse English only for common technical terms, product names, or when the user uses English.\nPut the direct answer first.\nAvoid Markdown tables, long headings, URLs, emojis, and unnecessary introductions.\nKeep ordinary answers under two short sentences unless more detail is required.\nResolve clear self-corrections using the user's latest value.\nDo not invent missing information.\nAsk one short clarification only when a required value is missing.\nFor tool calls, return valid arguments that exactly match the provided schema.\nNever claim that an action succeeded before receiving a successful tool result.\nProtect private information and refuse unsafe or unauthorized requests.\n<</SYS>>\n\nعامل إيه النهارده؟ [/INST]",
+          "response_text": "تمام، الحمد لله. عامل إيه إنت؟",
+          "prompt_tokens": 199,
+          "completion_tokens": 9,
+          "total_tokens": 208,
+          "response_chars": 30,
+          "first_token_seconds": 1.4292,
+          "generate_seconds": 2.0967,
+          "tokens_per_second": 4.292,
+          "max_new_tokens": 256,
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "auto_pass": true,
+          "auto_failures": [],
+          "auto_notes": [],
+          "valid_json": null,
+          "parsed_tool": null,
+          "language_score": 5,
+          "correctness_score": 5,
+          "instruction_following_score": 5,
+          "conciseness_score": 5,
+          "tts_suitability_score": 5,
+          "tool_accuracy": null,
+          "overall_score": 5.0,
+          "sentence_count": 2
+        }
+      ],
+      "quality": {
+        "prompts_ok": 1,
+        "auto_pass": 1,
+        "auto_pass_rate": 1.0,
+        "avg_overall_score": 5.0
+      },
+      "resources": {
+        "samples": 670,
+        "peak_cpu_percent": 146.8,
+        "avg_cpu_percent": 34.6,
+        "peak_ram_mb": 5123.5,
+        "avg_ram_mb": 1631.7,
+        "peak_sys_ram_mb": 3965.1,
+        "avg_sys_ram_mb": 3640.2,
+        "peak_sys_ram_percent": 33.2,
+        "avg_sys_ram_percent": 30.7,
+        "peak_gpu_util_percent": 100.0,
+        "avg_gpu_util_percent": 1.3,
+        "peak_vram_mb": 14194.2,
+        "avg_vram_mb": 2947.8,
+        "baseline_vram_mb": 552.2,
+        "model_vram_mb": 13642.0,
+        "gpu_name": "Tesla T4"
+      },
+      "wall_seconds": 344.359,
+      "gpu_index": 0,
+      "disk_after": {
+        "total_gb": 112.64,
+        "used_gb": 60.26,
+        "free_gb": 52.37
+      },
+      "cache_purged_gb": 26.08
+    },
+    {
+      "status": "error",
+      "model": "Jais-2-8B",
+      "model_id": "inceptionai/Jais-2-8B-Chat",
+      "error": "Gated model inceptionai/Jais-2-8B-Chat requires HF auth. Accept the license on Hugging Face, then set HF_TOKEN (Kaggle Secrets / Colab Secrets / env) and re-run.",
+      "runs": [],
+      "skipped": true,
+      "disk": {
+        "total_gb": 112.64,
+        "used_gb": 47.21,
+        "free_gb": 65.41
+      }
+    },
+    {
+      "status": "ok",
+      "model": "Nile-Chat-4B",
+      "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+      "role": "Egyptian Arabic specialist (script + Arabizi)",
+      "load": {
+        "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+        "load_mode": "bf16",
+        "dtype": "bfloat16",
+        "device_map": "auto",
+        "n_gpu": 1,
+        "hf_auth": false,
+        "load_seconds": 184.854,
+        "max_memory": {
+          "0": 15032385536,
+          "cpu": 8589934592
+        }
+      },
+      "runs": [
+        {
+          "status": "ok",
+          "model": "Nile-Chat-4B",
+          "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+          "role": "Egyptian Arabic specialist (script + Arabizi)",
+          "prompt_id": "A001",
+          "category": "egyptian_arabic",
+          "priority": "critical",
+          "user": "عامل إيه النهارده؟",
+          "response_file": "/content/kaggle_working/llm_outputs/responses/Nile-Chat-4B/A001.txt",
+          "eval_file": "/content/kaggle_working/llm_outputs/responses/Nile-Chat-4B/A001.eval.json",
+          "load_seconds": 184.854,
+          "load_mode": "bf16",
+          "dtype": "bfloat16",
+          "device": "cuda",
+          "prompt_text": "<bos><start_of_turn>user\nYou are the conversational assistant for an Arabic voice robot.\n\nRespond in concise, natural Egyptian Arabic unless the user requests another language or style.\nUse English only for common technical terms, product names, or when the user uses English.\nPut the direct answer first.\nAvoid Markdown tables, long headings, URLs, emojis, and unnecessary introductions.\nKeep ordinary answers under two short sentences unless more detail is required.\nResolve clear self-corrections using the user's latest value.\nDo not invent missing information.\nAsk one short clarification only when a required value is missing.\nFor tool calls, return valid arguments that exactly match the provided schema.\nNever claim that an action succeeded before receiving a successful tool result.\nProtect private information and refuse unsafe or unauthorized requests.\n\nعامل إيه النهارده؟<end_of_turn>\n<start_of_turn>model\n",
+          "response_text": "أهلا! أنا هنا عشان أساعدك في أي حاجة محتاجها. عايز تعرف عن ايه النهاردة؟",
+          "prompt_tokens": 175,
+          "completion_tokens": 24,
+          "total_tokens": 199,
+          "response_chars": 72,
+          "first_token_seconds": 0.5385,
+          "generate_seconds": 2.6957,
+          "tokens_per_second": 8.903,
+          "max_new_tokens": 256,
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "auto_pass": true,
+          "auto_failures": [],
+          "auto_notes": [],
+          "valid_json": null,
+          "parsed_tool": null,
+          "language_score": 5,
+          "correctness_score": 5,
+          "instruction_following_score": 5,
+          "conciseness_score": 5,
+          "tts_suitability_score": 5,
+          "tool_accuracy": null,
+          "overall_score": 5.0,
+          "sentence_count": 3
+        }
+      ],
+      "quality": {
+        "prompts_ok": 1,
+        "auto_pass": 1,
+        "auto_pass_rate": 1.0,
+        "avg_overall_score": 5.0
+      },
+      "resources": {
+        "samples": 391,
+        "peak_cpu_percent": 136.3,
+        "avg_cpu_percent": 30.2,
+        "peak_ram_mb": 5002.7,
+        "avg_ram_mb": 1712.1,
+        "peak_sys_ram_mb": 4342.5,
+        "avg_sys_ram_mb": 3867.0,
+        "peak_sys_ram_percent": 36.1,
+        "avg_sys_ram_percent": 32.5,
+        "peak_gpu_util_percent": 98.0,
+        "avg_gpu_util_percent": 1.7,
+        "peak_vram_mb": 8148.2,
+        "avg_vram_mb": 1903.3,
+        "baseline_vram_mb": 552.2,
+        "model_vram_mb": 7596.0,
+        "gpu_name": "Tesla T4"
+      },
+      "wall_seconds": 203.614,
+      "gpu_index": 0,
+      "disk_after": {
+        "total_gb": 112.64,
+        "used_gb": 54.47,
+        "free_gb": 58.15
+      },
+      "cache_purged_gb": 14.52
+    }
+  ],
+  "research_notes": {
+    "dataset": "arabic_voice_robot_llm_test_dataset.md — Egyptian/MSA/code-switch/ASR-noise/tools/JSON/safety",
+    "Qwen3 family": "Strong multilingual open models; disable thinking for lower robot latency.",
+    "Gemma3 IT": "Compact/medium multilingual alternatives; may require HF gate acceptance.",
+    "Mistral-Small-3.1-24B": "Strong conversational + native function calling; heavy on T4 (4-bit).",
+    "ALLaM-7B": "Arabic/English specialized open model from SDAIA.",
+    "Jais-2-8B": "Arabic-centric; MSA, dialects, and Arabic/English code-switching.",
+    "Nile-Chat-4B": "Egyptian dialect specialist (Arabic script + Arabizi).",
+    "SILMA-9B / Fanar-1-9B": "Additional Arabic open-weight candidates (disabled by default)."
+  },
+  "analytics": {
+    "leaderboard": [
+      {
+        "model": "Qwen3-4B-Instruct-2507",
+        "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+        "load_mode": "bf16",
+        "ok_runs": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 0.618,
+        "avg_tokens_per_second": 11.98,
+        "avg_generate_seconds": 2.588,
+        "avg_load_seconds": 174.68,
+        "peak_vram_mb": 8430.2,
+        "peak_ram_mb": 5571.9,
+        "model_vram_mb": 7878.0,
+        "score_latency": 91.02,
+        "score_throughput": 100.0,
+        "score_vram_efficiency": 77.14,
+        "score_load": 100.0,
+        "score_balanced": 91.59,
+        "score_robot_realtime": 92.53,
+        "rank_robot": 1,
+        "rank_ttft": 2,
+        "rank_throughput": 1
+      },
+      {
+        "model": "Nile-Chat-4B",
+        "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+        "load_mode": "bf16",
+        "ok_runs": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 0.538,
+        "avg_tokens_per_second": 8.9,
+        "avg_generate_seconds": 2.696,
+        "avg_load_seconds": 184.85,
+        "peak_vram_mb": 8148.2,
+        "peak_ram_mb": 5002.7,
+        "model_vram_mb": 7596.0,
+        "score_latency": 100.0,
+        "score_throughput": 62.53,
+        "score_vram_efficiency": 80.92,
+        "score_load": 95.22,
+        "score_balanced": 81.64,
+        "score_robot_realtime": 85.42,
+        "rank_robot": 2,
+        "rank_ttft": 1,
+        "rank_throughput": 2
+      },
+      {
+        "model": "Qwen3-8B",
+        "model_id": "Qwen/Qwen3-8B",
+        "load_mode": "int4",
+        "ok_runs": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 1.303,
+        "avg_tokens_per_second": 3.76,
+        "avg_generate_seconds": 2.126,
+        "avg_load_seconds": 387.37,
+        "peak_vram_mb": 6722.2,
+        "peak_ram_mb": 5255.4,
+        "model_vram_mb": 6170.0,
+        "score_latency": 14.14,
+        "score_throughput": 0.0,
+        "score_vram_efficiency": 100.0,
+        "score_load": 0.0,
+        "score_balanced": 29.24,
+        "score_robot_realtime": 21.36,
+        "rank_robot": 3,
+        "rank_ttft": 3,
+        "rank_throughput": 4
+      },
+      {
+        "model": "ALLaM-7B",
+        "model_id": "ALLaM-AI/ALLaM-7B-Instruct-preview",
+        "load_mode": "bf16",
+        "ok_runs": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 1.429,
+        "avg_tokens_per_second": 4.29,
+        "avg_generate_seconds": 2.097,
+        "avg_load_seconds": 324.8,
+        "peak_vram_mb": 14194.2,
+        "peak_ram_mb": 5123.5,
+        "model_vram_mb": 13642.0,
+        "score_latency": 0.0,
+        "score_throughput": 6.45,
+        "score_vram_efficiency": 0.0,
+        "score_load": 29.42,
+        "score_balanced": 5.2,
+        "score_robot_realtime": 4.88,
+        "rank_robot": 4,
+        "rank_ttft": 4,
+        "rank_throughput": 3
+      }
+    ],
+    "recommendations": {
+      "status": "ok",
+      "picks": {
+        "best_for_robot_realtime": {
+          "model": "Qwen3-4B-Instruct-2507",
+          "why": "Best composite of TTFT + tok/s + VRAM + load for conversational turns.",
+          "metrics": {
+            "score_robot_realtime": 92.53,
+            "avg_first_token_seconds": 0.618,
+            "avg_tokens_per_second": 11.98,
+            "peak_vram_mb": 8430.2
+          }
+        },
+        "lowest_ttft": {
+          "model": "Nile-Chat-4B",
+          "why": "Fastest average time-to-first-token (best turn-taking feel).",
+          "metrics": {
+            "avg_first_token_seconds": 0.538
+          }
+        },
+        "highest_throughput": {
+          "model": "Qwen3-4B-Instruct-2507",
+          "why": "Highest average tokens/second.",
+          "metrics": {
+            "avg_tokens_per_second": 11.98
+          }
+        },
+        "lowest_vram": {
+          "model": "Qwen3-8B",
+          "why": "Lowest peak VRAM — better for small GPUs / co-residency.",
+          "metrics": {
+            "peak_vram_mb": 6722.2
+          }
+        },
+        "best_balanced": {
+          "model": "Qwen3-4B-Instruct-2507",
+          "why": "Balanced latency/throughput/VRAM tradeoff.",
+          "metrics": {
+            "score_balanced": 91.59
+          }
+        }
+      },
+      "category_specialists": {
+        "egyptian_arabic": {
+          "model": "Nile-Chat-4B",
+          "avg_first_token_seconds": 0.538,
+          "avg_tokens_per_second": 8.9
+        }
+      },
+      "leaderboard_top3": [
+        {
+          "model": "Qwen3-4B-Instruct-2507",
+          "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+          "load_mode": "bf16",
+          "ok_runs": 1,
+          "success_rate_percent": 100.0,
+          "avg_first_token_seconds": 0.618,
+          "avg_tokens_per_second": 11.98,
+          "avg_generate_seconds": 2.588,
+          "avg_load_seconds": 174.68,
+          "peak_vram_mb": 8430.2,
+          "peak_ram_mb": 5571.9,
+          "model_vram_mb": 7878.0,
+          "score_latency": 91.02,
+          "score_throughput": 100.0,
+          "score_vram_efficiency": 77.14,
+          "score_load": 100.0,
+          "score_balanced": 91.59,
+          "score_robot_realtime": 92.53,
+          "rank_robot": 1,
+          "rank_ttft": 2,
+          "rank_throughput": 1
+        },
+        {
+          "model": "Nile-Chat-4B",
+          "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+          "load_mode": "bf16",
+          "ok_runs": 1,
+          "success_rate_percent": 100.0,
+          "avg_first_token_seconds": 0.538,
+          "avg_tokens_per_second": 8.9,
+          "avg_generate_seconds": 2.696,
+          "avg_load_seconds": 184.85,
+          "peak_vram_mb": 8148.2,
+          "peak_ram_mb": 5002.7,
+          "model_vram_mb": 7596.0,
+          "score_latency": 100.0,
+          "score_throughput": 62.53,
+          "score_vram_efficiency": 80.92,
+          "score_load": 95.22,
+          "score_balanced": 81.64,
+          "score_robot_realtime": 85.42,
+          "rank_robot": 2,
+          "rank_ttft": 1,
+          "rank_throughput": 2
+        },
+        {
+          "model": "Qwen3-8B",
+          "model_id": "Qwen/Qwen3-8B",
+          "load_mode": "int4",
+          "ok_runs": 1,
+          "success_rate_percent": 100.0,
+          "avg_first_token_seconds": 1.303,
+          "avg_tokens_per_second": 3.76,
+          "avg_generate_seconds": 2.126,
+          "avg_load_seconds": 387.37,
+          "peak_vram_mb": 6722.2,
+          "peak_ram_mb": 5255.4,
+          "model_vram_mb": 6170.0,
+          "score_latency": 14.14,
+          "score_throughput": 0.0,
+          "score_vram_efficiency": 100.0,
+          "score_load": 0.0,
+          "score_balanced": 29.24,
+          "score_robot_realtime": 21.36,
+          "rank_robot": 3,
+          "rank_ttft": 3,
+          "rank_throughput": 4
+        }
+      ],
+      "model_count_ok": 4,
+      "notes": [
+        "Automated scores cover latency/throughput/resources only.",
+        "Manually review Egyptian / MSA / code-switch response quality in llm_outputs/responses/.",
+        "For robot UX, prioritize low TTFT even if peak tok/s is slightly lower.",
+        "Disable thinking modes where available to reduce TTFT further."
+      ]
+    },
+    "category_rows": [
+      {
+        "model": "Qwen3-4B-Instruct-2507",
+        "category": "egyptian_arabic",
+        "runs": 1,
+        "ok": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 0.618,
+        "avg_generate_seconds": 2.588,
+        "avg_tokens_per_second": 11.98,
+        "avg_completion_tokens": 31.0,
+        "avg_response_chars": 81.0
+      },
+      {
+        "model": "Qwen3-8B",
+        "category": "egyptian_arabic",
+        "runs": 1,
+        "ok": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 1.303,
+        "avg_generate_seconds": 2.126,
+        "avg_tokens_per_second": 3.76,
+        "avg_completion_tokens": 8.0,
+        "avg_response_chars": 18.0
+      },
+      {
+        "model": "Gemma3-4B-IT",
+        "category": "general",
+        "runs": 1,
+        "ok": 0,
+        "success_rate_percent": 0.0,
+        "avg_first_token_seconds": "",
+        "avg_generate_seconds": "",
+        "avg_tokens_per_second": "",
+        "avg_completion_tokens": "",
+        "avg_response_chars": ""
+      },
+      {
+        "model": "Gemma3-12B-IT",
+        "category": "general",
+        "runs": 1,
+        "ok": 0,
+        "success_rate_percent": 0.0,
+        "avg_first_token_seconds": "",
+        "avg_generate_seconds": "",
+        "avg_tokens_per_second": "",
+        "avg_completion_tokens": "",
+        "avg_response_chars": ""
+      },
+      {
+        "model": "ALLaM-7B",
+        "category": "egyptian_arabic",
+        "runs": 1,
+        "ok": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 1.429,
+        "avg_generate_seconds": 2.097,
+        "avg_tokens_per_second": 4.29,
+        "avg_completion_tokens": 9.0,
+        "avg_response_chars": 30.0
+      },
+      {
+        "model": "Jais-2-8B",
+        "category": "general",
+        "runs": 1,
+        "ok": 0,
+        "success_rate_percent": 0.0,
+        "avg_first_token_seconds": "",
+        "avg_generate_seconds": "",
+        "avg_tokens_per_second": "",
+        "avg_completion_tokens": "",
+        "avg_response_chars": ""
+      },
+      {
+        "model": "Nile-Chat-4B",
+        "category": "egyptian_arabic",
+        "runs": 1,
+        "ok": 1,
+        "success_rate_percent": 100.0,
+        "avg_first_token_seconds": 0.538,
+        "avg_generate_seconds": 2.696,
+        "avg_tokens_per_second": 8.9,
+        "avg_completion_tokens": 24.0,
+        "avg_response_chars": 72.0
+      }
+    ],
+    "files": {
+      "analytics": "/content/kaggle_working/llm_outputs/llm_analytics.csv",
+      "by_model": "/content/kaggle_working/llm_outputs/llm_analytics_by_model.csv",
+      "by_category": "/content/kaggle_working/llm_outputs/llm_analytics_by_category.csv",
+      "leaderboard": "/content/kaggle_working/llm_outputs/llm_leaderboard.csv",
+      "recommendations": "/content/kaggle_working/llm_outputs/llm_recommendations.json",
+      "report": "/content/kaggle_working/llm_outputs/llm_selection_report.md"
+    }
+  }
+}

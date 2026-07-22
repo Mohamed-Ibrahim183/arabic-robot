@@ -1,0 +1,25 @@
+{
+  "prompt_id": "A001",
+  "category": "egyptian_arabic",
+  "priority": "critical",
+  "expected_behavior": [
+    "Respond naturally in Egyptian Arabic."
+  ],
+  "forbidden_behavior": [
+    "Respond only in English."
+  ],
+  "response_text": "النهارده عمله إيه؟",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 1
+}

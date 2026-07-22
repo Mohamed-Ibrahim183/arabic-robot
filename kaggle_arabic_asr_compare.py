@@ -109,7 +109,7 @@ CACHE_DIR = SCRATCH_DIR / "asr_cache"       # model checkpoints → big temp dis
 #   Path("/kaggle/input/my-audio/")
 #   Path("/kaggle/working/asr_inputs/")
 # AUDIO_LOCATION = Path(os.environ.get("ASR_AUDIO_LOCATION", str(INPUT_DIR)))
-AUDIO_LOCATION = Path("/kaggle/input/datasets/mohamed11ibrahim/testasrarabic/VoiceTut-TTS.wav")
+AUDIO_LOCATION = Path("/content/VoiceTut-TTS.wav")
 
 for d in (OUTPUT_DIR, TRANSCRIPT_DIR, META_DIR, CACHE_DIR, INPUT_DIR):
     d.mkdir(parents=True, exist_ok=True)

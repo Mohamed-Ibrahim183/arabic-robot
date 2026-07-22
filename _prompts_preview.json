@@ -1,0 +1,122 @@
+[
+  {
+    "id": "A001",
+    "category": "egyptian_arabic",
+    "priority": "critical",
+    "user": "عامل إيه النهارده؟"
+  },
+  {
+    "id": "A002",
+    "category": "egyptian_arabic",
+    "priority": "critical",
+    "user": "اشرحلي يعني إيه cloud computing بالمصري وببساطة."
+  },
+  {
+    "id": "A005",
+    "category": "egyptian_arabic",
+    "priority": "critical",
+    "user": "قولي الفرق بين RAM وVRAM في جملة واحدة."
+  },
+  {
+    "id": "C001",
+    "category": "code_switching",
+    "priority": "critical",
+    "user": "الـ API بيرجع timeout كل شوية، أبدأ أراجع إيه؟"
+  },
+  {
+    "id": "C002",
+    "category": "code_switching",
+    "priority": "critical",
+    "user": "إيه الفرق بين pay-as-you-go وmonthly subscription؟"
+  },
+  {
+    "id": "D001",
+    "category": "asr_noise",
+    "priority": "critical",
+    "user": "عايز احجز معاد بكره الساعه تمانيه لا خليها تسعه"
+  },
+  {
+    "id": "D002",
+    "category": "asr_noise",
+    "priority": "critical",
+    "user": "شغل التكييف على عشرين لا اربعه وعشرين"
+  },
+  {
+    "id": "D003",
+    "category": "asr_noise",
+    "priority": "high",
+    "user": "اجتماع الخميس تلاته احمد"
+  },
+  {
+    "id": "D005",
+    "category": "asr_noise",
+    "priority": "high",
+    "user": "فكرني يوم ٢٥ الساعة ٧"
+  },
+  {
+    "id": "E001",
+    "category": "instruction_following",
+    "priority": "critical",
+    "user": "اشرحلي فايدة quantization في جملتين بس."
+  },
+  {
+    "id": "E003",
+    "category": "instruction_following",
+    "priority": "high",
+    "user": "أنا عايز أحجز طيارة."
+  },
+  {
+    "id": "E004",
+    "category": "instruction_following",
+    "priority": "high",
+    "user": "هل 16 جيجا VRAM كفاية لتشغيل موديل 14B بكمية 4-bit؟ جاوب الأول وبعدين وضح."
+  },
+  {
+    "id": "G001",
+    "category": "multi_turn_memory",
+    "priority": "critical",
+    "user": "أنا اسمي إيه؟"
+  },
+  {
+    "id": "G002",
+    "category": "multi_turn_memory",
+    "priority": "critical",
+    "user": "الاجتماع مع مين؟"
+  },
+  {
+    "id": "G003",
+    "category": "multi_turn_memory",
+    "priority": "critical",
+    "user": "هتبعتها لمين؟"
+  },
+  {
+    "id": "J001",
+    "category": "tool_calling",
+    "priority": "critical",
+    "user": "فكرني أكلم محمد بكرة الساعة خمسة."
+  },
+  {
+    "id": "J002",
+    "category": "tool_calling",
+    "priority": "critical",
+    "user": "فكرني أكلم محمد بكرة."
+  },
+  {
+    "id": "J003",
+    "category": "tool_calling",
+    "priority": "critical",
+    "user": "خلي التكييف على عشرين، لا أربعة وعشرين."
+  },
+  {
+    "id": "J005",
+    "category": "tool_calling",
+    "priority": "critical",
+    "user": "احجز الاجتماع."
+  },
+  {
+    "id": "K001",
+    "category": "structured_output",
+    "priority": "critical",
+    "user": "استخرج البيانات التالية في JSON فقط:\nاسمي كريم، عمري 29 سنة، وعايش في القاهرة."
+  }
+]

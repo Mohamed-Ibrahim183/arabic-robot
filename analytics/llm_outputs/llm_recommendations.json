@@ -1,0 +1,128 @@
+{
+  "status": "ok",
+  "picks": {
+    "best_for_robot_realtime": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "why": "Best composite of TTFT + tok/s + VRAM + load for conversational turns.",
+      "metrics": {
+        "score_robot_realtime": 92.53,
+        "avg_first_token_seconds": 0.618,
+        "avg_tokens_per_second": 11.98,
+        "peak_vram_mb": 8430.2
+      }
+    },
+    "lowest_ttft": {
+      "model": "Nile-Chat-4B",
+      "why": "Fastest average time-to-first-token (best turn-taking feel).",
+      "metrics": {
+        "avg_first_token_seconds": 0.538
+      }
+    },
+    "highest_throughput": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "why": "Highest average tokens/second.",
+      "metrics": {
+        "avg_tokens_per_second": 11.98
+      }
+    },
+    "lowest_vram": {
+      "model": "Qwen3-8B",
+      "why": "Lowest peak VRAM — better for small GPUs / co-residency.",
+      "metrics": {
+        "peak_vram_mb": 6722.2
+      }
+    },
+    "best_balanced": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "why": "Balanced latency/throughput/VRAM tradeoff.",
+      "metrics": {
+        "score_balanced": 91.59
+      }
+    }
+  },
+  "category_specialists": {
+    "egyptian_arabic": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.538,
+      "avg_tokens_per_second": 8.9
+    }
+  },
+  "leaderboard_top3": [
+    {
+      "model": "Qwen3-4B-Instruct-2507",
+      "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+      "load_mode": "bf16",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 0.618,
+      "avg_tokens_per_second": 11.98,
+      "avg_generate_seconds": 2.588,
+      "avg_load_seconds": 174.68,
+      "peak_vram_mb": 8430.2,
+      "peak_ram_mb": 5571.9,
+      "model_vram_mb": 7878.0,
+      "score_latency": 91.02,
+      "score_throughput": 100.0,
+      "score_vram_efficiency": 77.14,
+      "score_load": 100.0,
+      "score_balanced": 91.59,
+      "score_robot_realtime": 92.53,
+      "rank_robot": 1,
+      "rank_ttft": 2,
+      "rank_throughput": 1
+    },
+    {
+      "model": "Nile-Chat-4B",
+      "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+      "load_mode": "bf16",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 0.538,
+      "avg_tokens_per_second": 8.9,
+      "avg_generate_seconds": 2.696,
+      "avg_load_seconds": 184.85,
+      "peak_vram_mb": 8148.2,
+      "peak_ram_mb": 5002.7,
+      "model_vram_mb": 7596.0,
+      "score_latency": 100.0,
+      "score_throughput": 62.53,
+      "score_vram_efficiency": 80.92,
+      "score_load": 95.22,
+      "score_balanced": 81.64,
+      "score_robot_realtime": 85.42,
+      "rank_robot": 2,
+      "rank_ttft": 1,
+      "rank_throughput": 2
+    },
+    {
+      "model": "Qwen3-8B",
+      "model_id": "Qwen/Qwen3-8B",
+      "load_mode": "int4",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 1.303,
+      "avg_tokens_per_second": 3.76,
+      "avg_generate_seconds": 2.126,
+      "avg_load_seconds": 387.37,
+      "peak_vram_mb": 6722.2,
+      "peak_ram_mb": 5255.4,
+      "model_vram_mb": 6170.0,
+      "score_latency": 14.14,
+      "score_throughput": 0.0,
+      "score_vram_efficiency": 100.0,
+      "score_load": 0.0,
+      "score_balanced": 29.24,
+      "score_robot_realtime": 21.36,
+      "rank_robot": 3,
+      "rank_ttft": 3,
+      "rank_throughput": 4
+    }
+  ],
+  "model_count_ok": 4,
+  "notes": [
+    "Automated scores cover latency/throughput/resources only.",
+    "Manually review Egyptian / MSA / code-switch response quality in llm_outputs/responses/.",
+    "For robot UX, prioritize low TTFT even if peak tok/s is slightly lower.",
+    "Disable thinking modes where available to reduce TTFT further."
+  ]
+}
