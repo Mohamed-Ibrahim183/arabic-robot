@@ -1,0 +1,28 @@
+{
+  "prompt_id": "D003",
+  "category": "asr_noise",
+  "priority": "high",
+  "expected_behavior": [
+    "Infer a likely meeting request.",
+    "Ask one concise clarification about the missing action."
+  ],
+  "forbidden_behavior": [
+    "Claim the meeting was created."
+  ],
+  "response_text": "اجتماع الخميس الساعة ثلاثة أحمد.",
+  "auto_pass": false,
+  "auto_failures": [
+    "expected a clarification question"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 1.0,
+  "overall_score": 3.35,
+  "sentence_count": 1
+}

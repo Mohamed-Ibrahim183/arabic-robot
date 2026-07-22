@@ -1,0 +1,81 @@
+﻿model,prompt_id,category,priority,auto_pass,overall_score,language_score,correctness_score,instruction_following_score,conciseness_score,tts_suitability_score,tool_accuracy,valid_json,first_token_seconds,tokens_per_second,auto_failures
+Qwen3-4B-Instruct-2507,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.5512,11.413,
+Qwen3-4B-Instruct-2507,A002,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.5598,16.41,
+Qwen3-4B-Instruct-2507,A005,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.566,12.331,
+Qwen3-4B-Instruct-2507,C001,code_switching,critical,False,2.08,5,1,2,1,2,,,0.6128,14.547,too many sentences (18 > 2×4)
+Qwen3-4B-Instruct-2507,C002,code_switching,critical,True,5.0,5,5,5,5,5,,,0.5781,13.505,
+Qwen3-4B-Instruct-2507,D001,asr_noise,critical,True,5.0,5,5,5,5,5,,,0.5876,14.704,
+Qwen3-4B-Instruct-2507,D002,asr_noise,critical,True,5.0,5,5,5,5,5,,,0.5805,9.735,
+Qwen3-4B-Instruct-2507,D003,asr_noise,high,True,5.0,5,5,5,5,5,1.0,,0.5777,13.481,
+Qwen3-4B-Instruct-2507,D005,asr_noise,high,False,3.06,5,1,2,5,5,,,0.5742,11.273,expected a clarification question
+Qwen3-4B-Instruct-2507,E001,instruction_following,critical,True,5.0,5,5,5,5,5,,,0.586,12.618,
+Qwen3-4B-Instruct-2507,E003,instruction_following,high,True,5.0,5,5,5,5,5,,,0.5899,8.584,
+Qwen3-4B-Instruct-2507,E004,instruction_following,high,True,5.0,5,5,5,5,5,,,0.749,16.962,
+Qwen3-4B-Instruct-2507,G001,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,0.6067,6.052,
+Qwen3-4B-Instruct-2507,G002,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,0.7797,4.712,
+Qwen3-4B-Instruct-2507,G003,multi_turn_memory,critical,False,2.88,5,1,1,5,5,,,0.7715,4.799,missing required text: 'محمد'; forbidden text present: 'محمود'
+Qwen3-4B-Instruct-2507,J001,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,2.2621,8.81,expected tool 'create_reminder'
+Qwen3-4B-Instruct-2507,J002,tool_calling,critical,True,5.0,5,5,5,5,5,1.0,,2.2692,8.001,
+Qwen3-4B-Instruct-2507,J003,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,2.0735,7.325,tool arg temperature_c=20 != 24
+Qwen3-4B-Instruct-2507,J005,tool_calling,critical,True,5.0,5,5,5,5,5,1.0,,2.2763,6.932,
+Qwen3-4B-Instruct-2507,K001,structured_output,critical,True,5.0,5,5,5,5,5,,True,0.7888,7.321,
+Qwen3-8B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.1849,3.566,
+Qwen3-8B,A002,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.2011,8.234,
+Qwen3-8B,A005,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.2082,6.782,
+Qwen3-8B,C001,code_switching,critical,True,5.0,5,5,5,5,5,,,1.2244,7.487,
+Qwen3-8B,C002,code_switching,critical,True,5.0,5,5,5,5,5,,,1.2229,7.168,
+Qwen3-8B,D001,asr_noise,critical,True,5.0,5,5,5,5,5,,,1.2429,4.795,
+Qwen3-8B,D002,asr_noise,critical,True,5.0,5,5,5,5,5,,,1.2389,6.428,
+Qwen3-8B,D003,asr_noise,high,True,5.0,5,5,5,5,5,1.0,,1.2353,6.422,
+Qwen3-8B,D005,asr_noise,high,True,5.0,5,5,5,5,5,,,1.2446,6.653,
+Qwen3-8B,E001,instruction_following,critical,True,5.0,5,5,5,5,5,,,1.2558,7.091,
+Qwen3-8B,E003,instruction_following,high,True,5.0,5,5,5,5,5,,,1.2566,4.126,
+Qwen3-8B,E004,instruction_following,high,True,5.0,5,5,5,5,5,,,1.5868,6.308,
+Qwen3-8B,G001,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.6052,3.022,
+Qwen3-8B,G002,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.6197,1.552,
+Qwen3-8B,G003,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.6217,1.962,
+Qwen3-8B,J001,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,4.3608,4.023,expected tool 'create_reminder'
+Qwen3-8B,J002,tool_calling,critical,True,5.0,5,5,5,5,5,1.0,,4.3876,4.558,
+Qwen3-8B,J003,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,4.0437,2.906,expected tool 'set_device_temperature'
+Qwen3-8B,J005,tool_calling,critical,True,5.0,5,5,5,5,5,1.0,,4.4518,4.643,
+Qwen3-8B,K001,structured_output,critical,False,2.88,5,1,1,5,5,,True,1.6527,5.487,JSON missing key 'name'; JSON missing key 'age'; JSON missing key 'city'
+ALLaM-7B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.2963,4.614,
+ALLaM-7B,A002,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.2909,10.529,
+ALLaM-7B,A005,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,1.2981,9.313,
+ALLaM-7B,C001,code_switching,critical,True,5.0,5,5,5,5,5,,,1.3138,9.1,
+ALLaM-7B,C002,code_switching,critical,True,5.0,5,5,5,5,5,,,1.3258,9.908,
+ALLaM-7B,D001,asr_noise,critical,True,5.0,5,5,5,5,5,,,1.3255,4.189,
+ALLaM-7B,D002,asr_noise,critical,False,3.06,5,1,2,5,5,,,1.3241,3.368,"missing any of: ['24', '٢٤', 'أربعة وعشرين', 'اربعة وعشرين', 'أربع وعشرين']"
+ALLaM-7B,D003,asr_noise,high,False,3.35,5,1,2,5,5,1.0,,1.3248,3.367,expected a clarification question
+ALLaM-7B,D005,asr_noise,high,False,3.06,5,1,2,5,5,,,1.331,6.987,expected a clarification question
+ALLaM-7B,E001,instruction_following,critical,True,5.0,5,5,5,5,5,,,1.3396,7.834,
+ALLaM-7B,E003,instruction_following,high,True,5.0,5,5,5,5,5,,,1.3383,4.861,
+ALLaM-7B,E004,instruction_following,high,True,5.0,5,5,5,5,5,,,1.3709,8.246,
+ALLaM-7B,G001,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.372,1.272,
+ALLaM-7B,G002,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.3928,2.324,
+ALLaM-7B,G003,multi_turn_memory,critical,True,5.0,5,5,5,5,5,,,1.3972,2.786,
+ALLaM-7B,J001,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,6.9069,5.261,tool arg datetime='2026-07-22T05:00:00+03:00' != '2026-07-22T17:00:00+03:00'
+ALLaM-7B,J002,tool_calling,critical,False,2.45,5,1,1,5,5,0.0,,7.0505,5.195,expected a clarification question; unexpected tool call: create_reminder
+ALLaM-7B,J003,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,6.7826,3.338,tool arg temperature_c=20 != 24
+ALLaM-7B,J005,tool_calling,critical,False,3.35,5,1,2,5,5,1.0,,7.2163,1.747,"missing any of: ['مش', 'فشل', 'unavailable', 'خطأ', 'error', 'مقدرش', 'ما قدرتش', 'failed']"
+ALLaM-7B,K001,structured_output,critical,True,4.47,5,4,4,5,5,,True,1.4564,8.169,
+Nile-Chat-4B,A001,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.4991,10.955,
+Nile-Chat-4B,A002,egyptian_arabic,critical,True,5.0,5,5,5,5,5,,,0.5059,12.815,
+Nile-Chat-4B,A005,egyptian_arabic,critical,False,2.08,5,1,2,1,2,,,0.5074,12.797,too many sentences (21 > 2×1)
+Nile-Chat-4B,C001,code_switching,critical,False,2.08,5,1,2,1,2,,,0.5245,13.699,too many sentences (20 > 2×4)
+Nile-Chat-4B,C002,code_switching,critical,False,2.08,5,1,2,1,2,,,0.5335,13.371,too many sentences (9 > 2×4)
+Nile-Chat-4B,D001,asr_noise,critical,False,2.08,5,1,2,1,2,,,0.545,13.16,too many sentences (22 > 2×3)
+Nile-Chat-4B,D002,asr_noise,critical,False,1.9,5,1,1,1,2,,,0.5485,13.177,"missing any of: ['24', '٢٤', 'أربعة وعشرين', 'اربعة وعشرين', 'أربع وعشرين']; too many sentences (17 > 2×3)"
+Nile-Chat-4B,D003,asr_noise,high,False,2.5,5,1,2,1,2,1.0,,0.5546,12.311,too many sentences (39 > 2×3)
+Nile-Chat-4B,D005,asr_noise,high,False,3.06,5,1,2,5,5,,,0.5544,8.547,expected a clarification question
+Nile-Chat-4B,E001,instruction_following,critical,True,5.0,5,5,5,5,5,,,0.5591,12.057,
+Nile-Chat-4B,E003,instruction_following,high,False,2.08,5,1,2,1,2,,,0.5631,13.463,too many sentences (23 > 2×2)
+Nile-Chat-4B,E004,instruction_following,high,False,2.08,5,1,2,1,2,,,0.7089,14.113,too many sentences (10 > 2×4)
+Nile-Chat-4B,G001,multi_turn_memory,critical,False,2.08,5,1,2,1,2,,,0.6898,13.479,too many sentences (26 > 2×2)
+Nile-Chat-4B,G002,multi_turn_memory,critical,False,2.08,5,1,2,1,2,,,0.7341,13.184,too many sentences (27 > 2×2)
+Nile-Chat-4B,G003,multi_turn_memory,critical,False,2.08,5,1,2,1,2,,,0.7402,13.012,too many sentences (32 > 2×2)
+Nile-Chat-4B,J001,tool_calling,critical,False,2.6,5,1,2,5,5,0.0,,2.4271,4.976,expected tool 'create_reminder'
+Nile-Chat-4B,J002,tool_calling,critical,False,3.35,5,1,2,5,5,1.0,,2.4252,3.596,expected a clarification question
+Nile-Chat-4B,J003,tool_calling,critical,False,1.85,5,1,2,2,2,0.0,,2.398,11.786,tool arg temperature_c=20 != 24
+Nile-Chat-4B,J005,tool_calling,critical,True,5.0,5,5,5,5,5,1.0,,2.435,7.584,
+Nile-Chat-4B,K001,structured_output,critical,False,2.19,5,1,2,2,2,,True,0.7469,13.125,JSON missing key 'city'

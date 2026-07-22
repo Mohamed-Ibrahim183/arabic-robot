@@ -1,0 +1,13 @@
+﻿model,audio_name,status,gpu_index,gpu_name,backend,device,load_seconds,transcribe_seconds,wall_seconds,audio_seconds,rtf,x_realtime,wer,cer,accuracy_percent,char_accuracy_percent,transcript_chars,peak_cpu_percent,avg_cpu_percent,peak_ram_mb,avg_ram_mb,peak_gpu_util_percent,avg_gpu_util_percent,peak_vram_mb,avg_vram_mb,model_vram_mb,error
+Whisper-Small-CT2,VoiceTut-TTS.wav,ok,0,Tesla T4,faster-whisper,cuda,6.16,10.88,45.92,129.01,0.084,11.86,0.3681,0.1686,63.19,83.14,1594,118.8,41.9,1390.6,695.0,76.0,9.6,1340.2,753.7,788.0,
+Whisper-Large-v3-Turbo-CT2,VoiceTut-TTS.wav,ok,0,Tesla T4,faster-whisper,cuda,48.59,5.93,68.73,129.01,0.046,21.75,0.316,0.1662,68.4,83.38,1551,172.2,32.3,2404.4,1307.2,100.0,6.0,2492.2,731.2,1940.0,
+Arabic-Whisper-Turbo-FT-CT2,VoiceTut-TTS.wav,ok,0,Tesla T4,faster-whisper,cuda,29.69,5.89,45.7,129.01,0.046,21.91,0.3924,0.1782,60.76,82.18,1623,121.4,39.9,1749.3,1018.3,99.0,8.8,1692.2,707.1,1140.0,
+Arabic-Whisper-Large-v3-FT-CT2,VoiceTut-TTS.wav,ok,0,Tesla T4,faster-whisper,cuda,35.17,17.43,59.2,129.01,0.135,7.4,0.3681,0.1794,63.19,82.06,1637,119.0,55.7,2821.4,1634.7,100.0,27.0,2812.2,1180.9,2260.0,
+QwenCleo-ASR,VoiceTut-TTS.wav,ok,0,Tesla T4,qwencleo-asr,cuda,0.0,75.09,117.64,129.01,0.582,1.72,0.6632,0.5888,33.68,41.12,751,188.1,61.3,4888.8,1808.1,100.0,12.2,5870.2,2309.2,5318.0,
+Whisper-Large-v3-CT2,VoiceTut-TTS.wav,ok,0,Tesla T4,faster-whisper,cuda,37.64,17.1,59.87,129.01,0.133,7.54,0.2708,0.1132,72.92,88.68,1619,194.1,65.4,3787.3,2413.4,100.0,25.8,4316.2,1623.8,3764.0,
+Qwen3-ASR-0.6B,VoiceTut-TTS.wav,ok,0,Tesla T4,qwen-asr,cuda:0,21.39,24.65,64.47,129.01,0.191,5.23,0.6007,0.401,39.93,59.9,1132,191.7,78.3,3064.2,2113.4,100.0,21.7,3740.2,2085.5,3188.0,
+Qwen3-ASR-1.7B,VoiceTut-TTS.wav,ok,0,Tesla T4,qwen-asr,cuda:0,90.55,27.74,137.57,129.01,0.215,4.65,0.6528,0.5328,34.72,46.72,981,586.4,54.7,5483.1,2787.4,100.0,14.2,6044.2,2477.0,5492.0,
+Audar-ASR-V1-Flash,VoiceTut-TTS.wav,ok,0,Tesla T4,qwen-asr,cuda:0,37.32,24.66,83.92,129.01,0.191,5.23,0.5069,0.413,49.31,58.7,1088,119.4,60.9,3242.3,1950.6,100.0,16.3,3480.2,1788.1,2928.0,
+Voxtral-Mini-3B,VoiceTut-TTS.wav,ok,0,Tesla T4,transformers-voxtral,cuda,146.24,36.22,199.6,129.01,0.281,3.56,0.2847,0.103,71.53,89.7,1624,191.4,61.4,6382.0,3676.5,100.0,17.8,11154.2,4325.1,10602.0,
+SeamlessM4T-v2-Large,VoiceTut-TTS.wav,ok,0,Tesla T4,transformers-seamless,cuda,133.44,17.39,173.38,129.01,0.135,7.42,0.4826,0.2896,51.74,71.04,1374,193.6,50.2,7432.8,3992.7,100.0,3.5,4072.2,999.4,3520.0,
+MMS-1B-all,VoiceTut-TTS.wav,ok,0,Tesla T4,transformers-mms,cuda,56.16,5.64,83.73,129.01,0.044,22.88,0.5764,0.2697,42.36,73.03,1491,185.9,51.4,5012.7,2294.5,100.0,6.0,5206.2,1412.8,4654.0,

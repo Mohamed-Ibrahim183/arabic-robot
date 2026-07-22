@@ -1,0 +1,27 @@
+{
+  "prompt_id": "E004",
+  "category": "instruction_following",
+  "priority": "high",
+  "expected_behavior": [
+    "Begin with a direct qualified answer.",
+    "Explain that practical fit depends on framework, KV cache, and context length."
+  ],
+  "forbidden_behavior": [
+    "Delay the answer with a long introduction.",
+    "Guarantee compatibility without qualification."
+  ],
+  "response_text": "نعم، 16 جيجا VRAM كفاية لتشغيل موديل 14B بكمية 4-bit.\n\nالسبب: موديل 14B بـ 4-bit يعني أن كل مُدخل يُعالج بـ 4 بت، مما يقلل من كمية الذاكرة المطلوبة. حساب الذاكرة المطلوبة يُحسب كالتالي: 14 مليار مُعامل × 4 بت = 56 مليار بت = 7 جيجا بايت (بما أن 1 جيجا بايت = 8 مليار بت). هذا يُحسب تقريبًا كـ 7 جيجا بايت فقط، ونضيف 1-2 جيجا بايت للعمليات والذاكرة المؤقتة، أي أن 16 جيجا بايت كافية بشكل كبير.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 4
+}

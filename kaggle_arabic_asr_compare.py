@@ -22,6 +22,8 @@ Usage on Kaggle:
      Run specific models:
        %run /kaggle/working/kaggle_arabic_asr_compare.py --only QwenCleo-ASR,Arabic-Whisper-Large-v3-FT-CT2
 
+After the run finishes, a zip of all asr_outputs is written next to the output folder.
+
 Outputs:
   /kaggle/working/asr_outputs/<model>__<audio>.txt
   /kaggle/working/asr_outputs/summary.json
@@ -32,6 +34,7 @@ Outputs:
   /kaggle/working/asr_outputs/asr_accuracy_ranking.csv
   /kaggle/working/asr_outputs/asr_recommendations.json
   /kaggle/working/asr_outputs/asr_selection_report.md
+  /kaggle/working/asr_outputs.zip  (and asr_outputs_<timestamp>.zip)
   (detailed timing, RTF, WER/CER, accuracy, resources, rankings, robot picks)
 
 Model selection notes, based on current web/model-card research:
@@ -1917,6 +1920,30 @@ def export_asr_analytics(
     }
 
 
+def zip_asr_outputs(output_dir: Path = OUTPUT_DIR) -> Path:
+    """Zip the entire asr_outputs tree for easy Kaggle/Colab download."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = time.strftime("%Y%m%d_%H%M%S")
+    zip_base = WORK_DIR / f"asr_outputs_{stamp}"
+    # Also write a stable name that overwrites each run.
+    stable = WORK_DIR / "asr_outputs"
+    archive = Path(
+        shutil.make_archive(str(zip_base), "zip", root_dir=str(output_dir.parent), base_dir=output_dir.name)
+    )
+    stable_zip = Path(str(stable) + ".zip")
+    try:
+        if stable_zip.exists():
+            stable_zip.unlink()
+        shutil.copy2(archive, stable_zip)
+    except Exception:
+        stable_zip = archive
+    print(f"Outputs zip: {archive}")
+    if stable_zip != archive:
+        print(f"Outputs zip (stable): {stable_zip}")
+    return archive
+
+
 def main(
     audio_paths: Optional[list[Path]] = None,
     reference_json: Optional[Path] = None,
@@ -2029,6 +2056,15 @@ def main(
 
     ok = [r for r in flat_rows if r.get("status") == "ok"]
     bad = [r for r in flat_rows if r.get("status") == "error"]
+    results["analytics"] = {
+        "leaderboard": exported["leaderboard"],
+        "recommendations": exported["recommendations"],
+        "files": {k: str(v) for k, v in paths.items()},
+    }
+    zip_path = zip_asr_outputs(OUTPUT_DIR)
+    results["outputs_zip"] = str(zip_path)
+    write_json(summary_path, results)
+
     print(f"\nDone. Summary JSON: {summary_path}")
     print(f"Summary CSV: {csv_path}")
     print(f"Analytics CSV: {paths['analytics']}")
@@ -2037,17 +2073,12 @@ def main(
     print(f"Accuracy ranking CSV: {paths['accuracy_ranking']}")
     print(f"Recommendations JSON: {paths['recommendations']}")
     print(f"Selection report MD: {paths['report']}")
+    print(f"Outputs ZIP: {zip_path}")
     print(f"OK runs: {len(ok)} / {len(flat_rows)}")
     if bad:
         print("Failed runs:")
         for row in bad:
             print(f"  - {row.get('model')} | {row.get('audio_name')}: {row.get('error')}")
-    results["analytics"] = {
-        "leaderboard": exported["leaderboard"],
-        "recommendations": exported["recommendations"],
-        "files": {k: str(v) for k, v in paths.items()},
-    }
-    write_json(summary_path, results)
     return results
 
 

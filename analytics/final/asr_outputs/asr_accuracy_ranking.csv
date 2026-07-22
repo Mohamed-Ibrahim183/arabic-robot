@@ -1,0 +1,13 @@
+﻿rank,model,audio_name,accuracy_percent,wer,cer,char_accuracy_percent,rtf,transcribe_seconds,peak_vram_mb
+1,Whisper-Large-v3-CT2,VoiceTut-TTS.wav,72.92,0.2708,0.1132,88.68,0.133,17.1,4316.2
+2,Voxtral-Mini-3B,VoiceTut-TTS.wav,71.53,0.2847,0.103,89.7,0.281,36.22,11154.2
+3,Whisper-Large-v3-Turbo-CT2,VoiceTut-TTS.wav,68.4,0.316,0.1662,83.38,0.046,5.93,2492.2
+4,Whisper-Small-CT2,VoiceTut-TTS.wav,63.19,0.3681,0.1686,83.14,0.084,10.88,1340.2
+5,Arabic-Whisper-Large-v3-FT-CT2,VoiceTut-TTS.wav,63.19,0.3681,0.1794,82.06,0.135,17.43,2812.2
+6,Arabic-Whisper-Turbo-FT-CT2,VoiceTut-TTS.wav,60.76,0.3924,0.1782,82.18,0.046,5.89,1692.2
+7,SeamlessM4T-v2-Large,VoiceTut-TTS.wav,51.74,0.4826,0.2896,71.04,0.135,17.39,4072.2
+8,Audar-ASR-V1-Flash,VoiceTut-TTS.wav,49.31,0.5069,0.413,58.7,0.191,24.66,3480.2
+9,MMS-1B-all,VoiceTut-TTS.wav,42.36,0.5764,0.2697,73.03,0.044,5.64,5206.2
+10,Qwen3-ASR-0.6B,VoiceTut-TTS.wav,39.93,0.6007,0.401,59.9,0.191,24.65,3740.2
+11,Qwen3-ASR-1.7B,VoiceTut-TTS.wav,34.72,0.6528,0.5328,46.72,0.215,27.74,6044.2
+12,QwenCleo-ASR,VoiceTut-TTS.wav,33.68,0.6632,0.5888,41.12,0.582,75.09,5870.2

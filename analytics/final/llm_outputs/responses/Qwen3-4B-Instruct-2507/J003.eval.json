@@ -1,0 +1,34 @@
+{
+  "prompt_id": "J003",
+  "category": "tool_calling",
+  "priority": "critical",
+  "expected_behavior": [
+    "Call set_device_temperature with 24."
+  ],
+  "forbidden_behavior": [
+    "Use 20.",
+    "Make two tool calls."
+  ],
+  "response_text": "{\"tool\": \"set_device_temperature\", \"arguments\": {\"device\": \"air conditioner\", \"temperature_c\": 20}}",
+  "auto_pass": false,
+  "auto_failures": [
+    "tool arg temperature_c=20 != 24"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": {
+    "tool": "set_device_temperature",
+    "arguments": {
+      "device": "air conditioner",
+      "temperature_c": 20
+    }
+  },
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 0.0,
+  "overall_score": 2.6,
+  "sentence_count": 1
+}

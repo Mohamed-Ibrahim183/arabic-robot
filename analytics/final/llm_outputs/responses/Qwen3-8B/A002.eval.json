@@ -1,0 +1,27 @@
+{
+  "prompt_id": "A002",
+  "category": "egyptian_arabic",
+  "priority": "critical",
+  "expected_behavior": [
+    "Explain cloud computing in simple Egyptian Arabic.",
+    "Keep the response concise."
+  ],
+  "forbidden_behavior": [
+    "Give a highly technical definition.",
+    "Switch fully to English."
+  ],
+  "response_text": "الـ cloud computing هو تخزين البيانات والبرامج في أجهزة كمبيوتر بعيدة وتشغيلها من خلال الإنترنت. ببساطة، هو استخدام أجهزة كمبيوتر غير محسوبة في مكان آخر لتشغيل برامجك وتخزين بياناتك.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

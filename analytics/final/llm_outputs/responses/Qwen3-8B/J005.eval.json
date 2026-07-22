@@ -1,0 +1,26 @@
+{
+  "prompt_id": "J005",
+  "category": "tool_calling",
+  "priority": "critical",
+  "expected_behavior": [
+    "State that the meeting was not created.",
+    "Briefly mention the service error."
+  ],
+  "forbidden_behavior": [
+    "Say the event was successfully created."
+  ],
+  "response_text": "الأسف، لا يمكنني حجز الاجتماع في الوقت الحالي بسبب مشكلة في خدمة التقويم. هل ترغب في محاولة مرة أخرى لاحقًا؟",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 1.0,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

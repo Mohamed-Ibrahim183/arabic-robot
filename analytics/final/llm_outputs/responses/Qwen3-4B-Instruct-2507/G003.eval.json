@@ -1,0 +1,28 @@
+{
+  "prompt_id": "G003",
+  "category": "multi_turn_memory",
+  "priority": "critical",
+  "expected_behavior": [
+    "Answer محمد."
+  ],
+  "forbidden_behavior": [
+    "Answer محمود."
+  ],
+  "response_text": "للمحمود.",
+  "auto_pass": false,
+  "auto_failures": [
+    "missing required text: 'محمد'",
+    "forbidden text present: 'محمود'"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 1,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 2.88,
+  "sentence_count": 1
+}

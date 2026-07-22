@@ -1,0 +1,140 @@
+{
+  "status": "ok",
+  "picks": {
+    "best_for_robot_realtime": {
+      "model": "Whisper-Large-v3-Turbo-CT2",
+      "why": "Highest composite robot score (accuracy + speed + VRAM + load).",
+      "metrics": {
+        "score_robot_realtime": 89.62,
+        "avg_accuracy_percent": 68.4,
+        "avg_rtf": 0.046,
+        "peak_vram_mb": 2492.2
+      }
+    },
+    "best_accuracy": {
+      "model": "Whisper-Large-v3-CT2",
+      "why": "Highest average word accuracy / lowest WER.",
+      "metrics": {
+        "avg_accuracy_percent": 72.92,
+        "avg_wer": 0.2708,
+        "avg_cer": 0.1132
+      }
+    },
+    "best_speed": {
+      "model": "MMS-1B-all",
+      "why": "Lowest average RTF (fastest relative to audio length).",
+      "metrics": {
+        "avg_rtf": 0.044,
+        "avg_x_realtime": 22.88,
+        "avg_transcribe_seconds": 5.64
+      }
+    },
+    "lowest_vram": {
+      "model": "Whisper-Small-CT2",
+      "why": "Lowest peak VRAM — useful for 6–16 GB GPUs or multi-model co-residency.",
+      "metrics": {
+        "peak_vram_mb": 1340.2
+      }
+    },
+    "best_balanced": {
+      "model": "Whisper-Large-v3-Turbo-CT2",
+      "why": "Balanced accuracy/speed/VRAM tradeoff.",
+      "metrics": {
+        "score_balanced": 90.17
+      }
+    },
+    "best_realtime_with_accuracy": {
+      "model": "Whisper-Large-v3-CT2",
+      "why": "RTF < 1 and best available accuracy among realtime-capable models.",
+      "metrics": {
+        "avg_rtf": 0.133,
+        "avg_accuracy_percent": 72.92
+      }
+    }
+  },
+  "leaderboard_top3": [
+    {
+      "model": "Whisper-Large-v3-Turbo-CT2",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_accuracy_percent": 68.4,
+      "avg_wer": 0.316,
+      "avg_cer": 0.1662,
+      "avg_rtf": 0.046,
+      "avg_x_realtime": 21.75,
+      "realtime_capable_percent": 100.0,
+      "avg_load_seconds": 48.59,
+      "avg_transcribe_seconds": 5.93,
+      "peak_vram_mb": 2492.2,
+      "peak_ram_mb": 2404.4,
+      "peak_cpu_percent": 172.2,
+      "score_accuracy": 88.48,
+      "score_speed": 99.63,
+      "score_vram_efficiency": 88.26,
+      "score_load": 66.77,
+      "score_balanced": 90.17,
+      "score_robot_realtime": 89.62,
+      "rank_robot": 1,
+      "rank_accuracy": 3,
+      "rank_speed": 2
+    },
+    {
+      "model": "Whisper-Large-v3-CT2",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_accuracy_percent": 72.92,
+      "avg_wer": 0.2708,
+      "avg_cer": 0.1132,
+      "avg_rtf": 0.133,
+      "avg_x_realtime": 7.54,
+      "realtime_capable_percent": 100.0,
+      "avg_load_seconds": 37.64,
+      "avg_transcribe_seconds": 17.1,
+      "peak_vram_mb": 4316.2,
+      "peak_ram_mb": 3787.3,
+      "peak_cpu_percent": 194.1,
+      "score_accuracy": 100.0,
+      "score_speed": 83.46,
+      "score_vram_efficiency": 69.68,
+      "score_load": 74.26,
+      "score_balanced": 85.57,
+      "score_robot_realtime": 87.92,
+      "rank_robot": 2,
+      "rank_accuracy": 1,
+      "rank_speed": 5
+    },
+    {
+      "model": "Whisper-Small-CT2",
+      "ok_runs": 1,
+      "success_rate_percent": 100.0,
+      "avg_accuracy_percent": 63.19,
+      "avg_wer": 0.3681,
+      "avg_cer": 0.1686,
+      "avg_rtf": 0.084,
+      "avg_x_realtime": 11.86,
+      "realtime_capable_percent": 100.0,
+      "avg_load_seconds": 6.16,
+      "avg_transcribe_seconds": 10.88,
+      "peak_vram_mb": 1340.2,
+      "peak_ram_mb": 1390.6,
+      "peak_cpu_percent": 118.8,
+      "score_accuracy": 75.2,
+      "score_speed": 92.57,
+      "score_vram_efficiency": 100.0,
+      "score_load": 95.79,
+      "score_balanced": 88.3,
+      "score_robot_realtime": 86.19,
+      "rank_robot": 3,
+      "rank_accuracy": 4,
+      "rank_speed": 4
+    }
+  ],
+  "model_count_ok": 12,
+  "model_count_total": 12,
+  "notes": [
+    "score_robot_realtime weights accuracy (45%) + speed/RTF (30%) + low VRAM (15%) + fast load (10%).",
+    "RTF < 1.0 means transcription finishes faster than audio duration (good for near-real-time).",
+    "If WER/accuracy is missing, listen-quality still needs human review of transcripts.",
+    "For ESP32 robot VPS: prefer low RTF + high accuracy + VRAM that fits your GPU with headroom."
+  ]
+}

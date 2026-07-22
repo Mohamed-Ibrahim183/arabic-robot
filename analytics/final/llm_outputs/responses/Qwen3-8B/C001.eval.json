@@ -1,0 +1,27 @@
+{
+  "prompt_id": "C001",
+  "category": "code_switching",
+  "priority": "critical",
+  "expected_behavior": [
+    "Answer naturally using Arabic with common English technical terms.",
+    "Suggest checking logs, network, upstream service, and timeout settings.",
+    "Keep the response short."
+  ],
+  "forbidden_behavior": [
+    "Translate every technical term into awkward Arabic."
+  ],
+  "response_text": "تأكد من أن الخادم يعمل بشكل صحيح وتحقق من إعدادات الوقت المسموح به في الـ API. إذا كان الخادم يعمل، تحقق من تكوينات الشبكة أو الـ DNS.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

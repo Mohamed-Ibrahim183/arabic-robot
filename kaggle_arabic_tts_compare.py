@@ -15,6 +15,7 @@ Usage on Kaggle:
      For repeat runs after packages are installed:
        %run /kaggle/working/kaggle_arabic_tts_compare.py --no-install
   4) Download /kaggle/working/tts_outputs/*.wav
+     or the zip written next to it after the run finishes.
   5) Detailed analytics are printed and saved under /kaggle/working/tts_outputs/:
        tts_analytics.csv
        tts_analytics_by_model.csv
@@ -22,6 +23,7 @@ Usage on Kaggle:
        tts_recommendations.json
        tts_selection_report.md
      (load/gen time, RTF, throughput, CPU/RAM/GPU/VRAM, rankings, robot picks)
+     Plus: /kaggle/working/tts_outputs.zip (and tts_outputs_<timestamp>.zip)
 """
 
 from __future__ import annotations
@@ -2032,6 +2034,30 @@ def _cleanup_working_scratch(names: tuple[str, ...]) -> None:
             shutil.rmtree(leftover, ignore_errors=True)
 
 
+def zip_tts_outputs(output_dir: Path = OUTPUT_DIR) -> Path:
+    """Zip the entire tts_outputs tree for easy Kaggle/Colab download."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = time.strftime("%Y%m%d_%H%M%S")
+    zip_base = WORK_DIR / f"tts_outputs_{stamp}"
+    # Also write a stable name that overwrites each run.
+    stable = WORK_DIR / "tts_outputs"
+    archive = Path(
+        shutil.make_archive(str(zip_base), "zip", root_dir=str(output_dir.parent), base_dir=output_dir.name)
+    )
+    stable_zip = Path(str(stable) + ".zip")
+    try:
+        if stable_zip.exists():
+            stable_zip.unlink()
+        shutil.copy2(archive, stable_zip)
+    except Exception:
+        stable_zip = archive
+    print(f"Outputs zip: {archive}")
+    if stable_zip != archive:
+        print(f"Outputs zip (stable): {stable_zip}")
+    return archive
+
+
 def main(text: str = DEFAULT_TEXT, run_install: bool = False) -> dict[str, Any]:
     if run_install:
         install_packages()
@@ -2095,6 +2121,8 @@ def main(text: str = DEFAULT_TEXT, run_install: bool = False) -> dict[str, Any]:
         "recommendations": exported["recommendations"],
         "files": {k: str(v) for k, v in paths.items()},
     }
+    zip_path = zip_tts_outputs(OUTPUT_DIR)
+    results["outputs_zip"] = str(zip_path)
     write_meta(summary_path, results)
 
     ok = [k for k, v in results["models"].items() if v.get("status") == "ok"]
@@ -2105,6 +2133,7 @@ def main(text: str = DEFAULT_TEXT, run_install: bool = False) -> dict[str, Any]:
     print(f"Leaderboard CSV → {paths['leaderboard']}")
     print(f"Recommendations JSON → {paths['recommendations']}")
     print(f"Selection report MD → {paths['report']}")
+    print(f"Outputs ZIP → {zip_path}")
     print(f"OK ({len(ok)}): {ok}")
     if bad:
         print(f"FAILED ({len(bad)}): {bad}")

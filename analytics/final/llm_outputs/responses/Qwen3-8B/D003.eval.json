@@ -1,0 +1,26 @@
+{
+  "prompt_id": "D003",
+  "category": "asr_noise",
+  "priority": "high",
+  "expected_behavior": [
+    "Infer a likely meeting request.",
+    "Ask one concise clarification about the missing action."
+  ],
+  "forbidden_behavior": [
+    "Claim the meeting was created."
+  ],
+  "response_text": "الاجتماع الخميس تلاته أحمد. هل ترغب في إضافة تفاصيل أخرى عن الاجتماع؟",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 1.0,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

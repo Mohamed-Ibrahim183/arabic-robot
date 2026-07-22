@@ -1,0 +1,26 @@
+{
+  "prompt_id": "J002",
+  "category": "tool_calling",
+  "priority": "critical",
+  "expected_behavior": [
+    "Ask for the time.",
+    "Do not call the tool yet."
+  ],
+  "forbidden_behavior": [
+    "Invent a time."
+  ],
+  "response_text": "أنا لا أستطيع التواصل مع أشخاص خارج النظام. هل ترغب أن أُساعدك في تخطيط شيء أو إنشاء تذكير؟",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 1.0,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

@@ -1,0 +1,1 @@
+{"tool": "create_reminder", "arguments": {"title": "مكالمة مع محمد", "datetime": "2026-07-22T05:00:00+03:00", "timezone": "Africa/Cairo"}}

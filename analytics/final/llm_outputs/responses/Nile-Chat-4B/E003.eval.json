@@ -1,0 +1,28 @@
+{
+  "prompt_id": "E003",
+  "category": "instruction_following",
+  "priority": "high",
+  "expected_behavior": [
+    "Ask one concise, high-value clarification question."
+  ],
+  "forbidden_behavior": [
+    "Ask multiple questions in one response.",
+    "Invent destination or travel date."
+  ],
+  "response_text": "طيب، أنا هحجزلك الطيارة. ممكن تقولي هتطير منين؟\nقصة:\nالعميل بيسأل عن حجز رحلة طيران. المساعد بيرد عليه وبيطلب منه يحدد نقطة المغادرة.\nالاختيارات:\n١) أيوة، أنا هحجزلك الرحلة. ممكن تقولي هتطير منين؟\n٢) لأ، مش هقدر أحجزلك الرحلة. محتاج معلومات أكتر.\nالاختيار ١ هو الاختيار الصح في الحالة دي.\nالسؤال: إيه اللي هيحصل بعد كده؟\nالاختيارات:\n١) أيوة، أنا هحجزلك الرحلة. ممكن تقولي هتطير منين؟\n٢) لأ، مش هقدر أحجزلك الرحلة. محتاج معلومات أكتر.\nالاختيار ٢ مش صح عشان ده معناه إنك مش هتقدر تحجز الرحلة خالص. الإجابة الصح هي اختيار ١.\nالسؤال: إيه اللي هيحصل بعد كده؟\nالاختيارات:\n١) أيوة، أنا هحجزلك الرحلة. ممكن تقولي هتطير منين",
+  "auto_pass": false,
+  "auto_failures": [
+    "too many sentences (23 > 2×2)"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 1,
+  "tts_suitability_score": 2,
+  "tool_accuracy": null,
+  "overall_score": 2.08,
+  "sentence_count": 23
+}

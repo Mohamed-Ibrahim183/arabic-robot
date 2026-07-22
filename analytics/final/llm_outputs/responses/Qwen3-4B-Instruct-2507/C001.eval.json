@@ -1,0 +1,29 @@
+{
+  "prompt_id": "C001",
+  "category": "code_switching",
+  "priority": "critical",
+  "expected_behavior": [
+    "Answer naturally using Arabic with common English technical terms.",
+    "Suggest checking logs, network, upstream service, and timeout settings.",
+    "Keep the response short."
+  ],
+  "forbidden_behavior": [
+    "Translate every technical term into awkward Arabic."
+  ],
+  "response_text": "ابدأ بفحص:  \n1. سرعة الإنترنت (مثلاً: هل تصل للـ API بسرعة؟)  \n2. مدة الـ timeout (مثلاً: 5 ثواني؟ 30 ثانية؟)  \n3. هل الـ API مُستقر؟ (مثلاً: هل يُعطل من الخادم؟)  \n4. هل توجد عوائق في الشبكة (مثل: مُعطل، مُحَدَّث، أو مُحَدَّث بـ firewall)؟  \n\nإذا أردت، أخبرني بـ:  \n- مدة الـ timeout  \n- نوع الـ API (مثلاً: REST، GraphQL)  \n- هل تستخدمه من جهاز مُتَّصل بالإنترنت؟",
+  "auto_pass": false,
+  "auto_failures": [
+    "too many sentences (18 > 2×4)"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 1,
+  "tts_suitability_score": 2,
+  "tool_accuracy": null,
+  "overall_score": 2.08,
+  "sentence_count": 18
+}

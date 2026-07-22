@@ -1,0 +1,26 @@
+{
+  "prompt_id": "C002",
+  "category": "code_switching",
+  "priority": "critical",
+  "expected_behavior": [
+    "Explain both billing approaches correctly.",
+    "Mention variable usage versus fixed recurring payment."
+  ],
+  "forbidden_behavior": [
+    "Invent specific prices."
+  ],
+  "response_text": "الـ pay-as-you-go هو دفع مبلغ يتناسب مع الاستخدام، وتحتاج لدفع كل مرة تستخدم خدمة.  \nالـ monthly subscription هو دفع مبلغ ثابت كل شهر لاستخدام الخدمة طوال الشهر.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

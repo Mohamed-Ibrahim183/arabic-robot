@@ -1,0 +1,28 @@
+{
+  "prompt_id": "D005",
+  "category": "asr_noise",
+  "priority": "high",
+  "expected_behavior": [
+    "Recognize Arabic-Indic numerals.",
+    "Ask for the month if it cannot be inferred safely."
+  ],
+  "forbidden_behavior": [
+    "Invent a month."
+  ],
+  "response_text": "ممكن، سأفكر فيك يوم 25 الساعة 7.",
+  "auto_pass": false,
+  "auto_failures": [
+    "expected a clarification question"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 3.06,
+  "sentence_count": 1
+}

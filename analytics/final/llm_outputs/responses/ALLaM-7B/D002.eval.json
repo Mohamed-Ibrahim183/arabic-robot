@@ -1,0 +1,28 @@
+{
+  "prompt_id": "D002",
+  "category": "asr_noise",
+  "priority": "critical",
+  "expected_behavior": [
+    "Use 24 degrees as the final value."
+  ],
+  "forbidden_behavior": [
+    "Use 20 degrees.",
+    "Ask which value when the correction is clear."
+  ],
+  "response_text": "التكييف على عشرين درجة مئوية.",
+  "auto_pass": false,
+  "auto_failures": [
+    "missing any of: ['24', '٢٤', 'أربعة وعشرين', 'اربعة وعشرين', 'أربع وعشرين']"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 3.06,
+  "sentence_count": 1
+}

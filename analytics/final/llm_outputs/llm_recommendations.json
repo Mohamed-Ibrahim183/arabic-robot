@@ -1,0 +1,158 @@
+{
+  "status": "ok",
+  "picks": {
+    "best_for_robot_realtime": {
+      "model": "Nile-Chat-4B",
+      "why": "Best composite of TTFT + tok/s + VRAM + load for conversational turns.",
+      "metrics": {
+        "score_robot_realtime": 95.41,
+        "avg_first_token_seconds": 0.96,
+        "avg_tokens_per_second": 11.56,
+        "peak_vram_mb": 8394.2
+      }
+    },
+    "lowest_ttft": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "why": "Fastest average time-to-first-token (best turn-taking feel).",
+      "metrics": {
+        "avg_first_token_seconds": 0.947
+      }
+    },
+    "highest_throughput": {
+      "model": "Nile-Chat-4B",
+      "why": "Highest average tokens/second.",
+      "metrics": {
+        "avg_tokens_per_second": 11.56
+      }
+    },
+    "lowest_vram": {
+      "model": "Qwen3-8B",
+      "why": "Lowest peak VRAM — better for small GPUs / co-residency.",
+      "metrics": {
+        "peak_vram_mb": 6900.2
+      }
+    },
+    "best_balanced": {
+      "model": "Nile-Chat-4B",
+      "why": "Balanced latency/throughput/VRAM tradeoff.",
+      "metrics": {
+        "score_balanced": 93.75
+      }
+    }
+  },
+  "category_specialists": {
+    "asr_noise": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.551,
+      "avg_tokens_per_second": 11.8
+    },
+    "code_switching": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.529,
+      "avg_tokens_per_second": 13.54
+    },
+    "egyptian_arabic": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.504,
+      "avg_tokens_per_second": 12.19
+    },
+    "instruction_following": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.61,
+      "avg_tokens_per_second": 13.21
+    },
+    "multi_turn_memory": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "avg_first_token_seconds": 0.719,
+      "avg_tokens_per_second": 5.19
+    },
+    "structured_output": {
+      "model": "Nile-Chat-4B",
+      "avg_first_token_seconds": 0.747,
+      "avg_tokens_per_second": 13.12
+    },
+    "tool_calling": {
+      "model": "Qwen3-4B-Instruct-2507",
+      "avg_first_token_seconds": 2.22,
+      "avg_tokens_per_second": 7.77
+    }
+  },
+  "leaderboard_top3": [
+    {
+      "model": "Nile-Chat-4B",
+      "model_id": "MBZUAI-Paris/Nile-Chat-4B",
+      "load_mode": "bf16",
+      "ok_runs": 20,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 0.96,
+      "avg_tokens_per_second": 11.56,
+      "avg_generate_seconds": 13.081,
+      "avg_load_seconds": 165.63,
+      "peak_vram_mb": 8394.2,
+      "peak_ram_mb": 6163.4,
+      "model_vram_mb": 7842.0,
+      "score_latency": 99.15,
+      "score_throughput": 100.0,
+      "score_vram_efficiency": 82.17,
+      "score_load": 84.62,
+      "score_balanced": 93.75,
+      "score_robot_realtime": 95.41,
+      "rank_robot": 1,
+      "rank_ttft": 2,
+      "rank_throughput": 1
+    },
+    {
+      "model": "Qwen3-4B-Instruct-2507",
+      "model_id": "Qwen/Qwen3-4B-Instruct-2507",
+      "load_mode": "bf16",
+      "ok_runs": 20,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 0.947,
+      "avg_tokens_per_second": 10.48,
+      "avg_generate_seconds": 3.774,
+      "avg_load_seconds": 138.72,
+      "peak_vram_mb": 8758.2,
+      "peak_ram_mb": 6116.8,
+      "model_vram_mb": 8206.0,
+      "score_latency": 100.0,
+      "score_throughput": 83.12,
+      "score_vram_efficiency": 77.83,
+      "score_load": 100.0,
+      "score_balanced": 88.55,
+      "score_robot_realtime": 91.61,
+      "rank_robot": 2,
+      "rank_ttft": 1,
+      "rank_throughput": 2
+    },
+    {
+      "model": "Qwen3-8B",
+      "model_id": "Qwen/Qwen3-8B",
+      "load_mode": "int4",
+      "ok_runs": 20,
+      "success_rate_percent": 100.0,
+      "avg_first_token_seconds": 1.942,
+      "avg_tokens_per_second": 5.16,
+      "avg_generate_seconds": 4.634,
+      "avg_load_seconds": 313.72,
+      "peak_vram_mb": 6900.2,
+      "peak_ram_mb": 6077.5,
+      "model_vram_mb": 6348.0,
+      "score_latency": 34.8,
+      "score_throughput": 0.0,
+      "score_vram_efficiency": 100.0,
+      "score_load": 0.0,
+      "score_balanced": 35.44,
+      "score_robot_realtime": 30.66,
+      "rank_robot": 3,
+      "rank_ttft": 3,
+      "rank_throughput": 4
+    }
+  ],
+  "model_count_ok": 4,
+  "notes": [
+    "Automated scores cover latency/throughput/resources only.",
+    "Manually review Egyptian / MSA / code-switch response quality in llm_outputs/responses/.",
+    "For robot UX, prioritize low TTFT even if peak tok/s is slightly lower.",
+    "Disable thinking modes where available to reduce TTFT further."
+  ]
+}

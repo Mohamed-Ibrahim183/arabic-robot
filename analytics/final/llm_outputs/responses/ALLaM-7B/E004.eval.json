@@ -1,0 +1,27 @@
+{
+  "prompt_id": "E004",
+  "category": "instruction_following",
+  "priority": "high",
+  "expected_behavior": [
+    "Begin with a direct qualified answer.",
+    "Explain that practical fit depends on framework, KV cache, and context length."
+  ],
+  "forbidden_behavior": [
+    "Delay the answer with a long introduction.",
+    "Guarantee compatibility without qualification."
+  ],
+  "response_text": "لأ، مش كفاية. 16 جيجا VRAM مش كفاية لتشغيل موديل 14B بكمية 4-bit.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

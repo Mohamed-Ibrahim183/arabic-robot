@@ -1,0 +1,26 @@
+{
+  "prompt_id": "E001",
+  "category": "instruction_following",
+  "priority": "critical",
+  "expected_behavior": [
+    "Use exactly two sentences.",
+    "Mention reduced memory and possibly faster inference."
+  ],
+  "forbidden_behavior": [
+    "Use more than two sentences."
+  ],
+  "response_text": "الـquantization هو عملية تقليل عدد البتات اللي بتستخدم عشان تمثل البيانات الرقمية، وده بيخلينا نخزن ونعالج المعلومات بكفاءة أكتر.",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 1
+}

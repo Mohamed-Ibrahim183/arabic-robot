@@ -1,0 +1,26 @@
+{
+  "prompt_id": "D001",
+  "category": "asr_noise",
+  "priority": "critical",
+  "expected_behavior": [
+    "Interpret the final requested time as 9:00.",
+    "Do not preserve 8:00 as the selected time."
+  ],
+  "forbidden_behavior": [
+    "Schedule both times."
+  ],
+  "response_text": "معادك بكره الساعة 10؟ أم الساعة 9؟",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 2
+}

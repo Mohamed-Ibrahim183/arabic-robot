@@ -1,0 +1,26 @@
+{
+  "prompt_id": "D002",
+  "category": "asr_noise",
+  "priority": "critical",
+  "expected_behavior": [
+    "Use 24 degrees as the final value."
+  ],
+  "forbidden_behavior": [
+    "Use 20 degrees.",
+    "Ask which value when the correction is clear."
+  ],
+  "response_text": "شغل التكييف على 20 لا 24",
+  "auto_pass": true,
+  "auto_failures": [],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 5,
+  "instruction_following_score": 5,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": null,
+  "overall_score": 5.0,
+  "sentence_count": 1
+}

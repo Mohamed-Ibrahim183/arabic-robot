@@ -8,8 +8,10 @@ the rest of the benchmark.
 Usage on Kaggle:
   1) Upload this file AND arabic_voice_robot_llm_dataset.py to /kaggle/working/
      (optional: also upload arabic_voice_robot_llm_test_dataset.md for reference).
-  2) Prompts are built from the Arabic voice-robot dataset (first-round 20 critical
-     tests by default). Override with --suite full|critical|first or a custom
+  2) Prompts are built from the Arabic voice-robot dataset (first-round 20 tests
+     by default: A001/A002/A005, C001-C002, D001-D005, E001/E003/E004, G001-G003,
+     J001-J005, K001). The same 20 cases are embedded as a fallback if the dataset
+     module is missing. Override with --suite full|critical|first or a custom
      --prompts-file JSON.
   3) Add HF_TOKEN as a Kaggle/Colab secret (and accept each model license on Hugging Face)
      for gated models: Gemma / Mistral / Jais / SILMA. Nile-Chat is usually public.
@@ -287,20 +289,9 @@ DEFAULT_SYSTEM = (
     "Protect private information and refuse unsafe or unauthorized requests."
 )
 
-# Legacy single-turn prompts kept only as emergency fallback if the dataset module
-# cannot be imported. Prefer arabic_voice_robot_llm_dataset.VOICE_ROBOT_CASES.
-BUILTIN_PROMPTS: list[dict[str, Any]] = [
-    {
-        "id": "A001",
-        "category": "egyptian_arabic",
-        "priority": "critical",
-        "user": "عامل إيه النهارده؟",
-        "turns": [{"role": "user", "content": "عامل إيه النهارده؟"}],
-        "expected_behavior": ["Respond naturally in Egyptian Arabic."],
-        "forbidden_behavior": ["Respond only in English."],
-        "checks": {"max_sentences": 3, "expect_lang": "ar"},
-    },
-]
+# Embedded first-round suite (20 cases). Used when arabic_voice_robot_llm_dataset.py
+# is missing on Kaggle/Colab. Keep in sync with FIRST_ROUND_IDS in that module.
+BUILTIN_PROMPTS: list[dict[str, Any]] = [{'id': 'A001', 'category': 'egyptian_arabic', 'priority': 'critical', 'user': 'عامل إيه النهارده؟', 'turns': [{'role': 'user', 'content': 'عامل إيه النهارده؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Respond naturally in Egyptian Arabic.', 'Keep the answer short and conversational.'], 'forbidden_behavior': ['Respond only in English.', 'Produce a long explanation.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': 'ar', 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'A002', 'category': 'egyptian_arabic', 'priority': 'critical', 'user': 'اشرحلي يعني إيه cloud computing بالمصري وببساطة.', 'turns': [{'role': 'user', 'content': 'اشرحلي يعني إيه cloud computing بالمصري وببساطة.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Explain cloud computing in simple Egyptian Arabic.', 'Keep the response concise.'], 'forbidden_behavior': ['Give a highly technical definition.', 'Switch fully to English.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 4, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': 'ar', 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'A005', 'category': 'egyptian_arabic', 'priority': 'critical', 'user': 'قولي الفرق بين RAM وVRAM في جملة واحدة.', 'turns': [{'role': 'user', 'content': 'قولي الفرق بين RAM وVRAM في جملة واحدة.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Answer in exactly one concise sentence.'], 'forbidden_behavior': ['Use bullets.', 'Use more than one sentence.'], 'checks': {'must_contain': ['RAM', 'VRAM'], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 1, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': 'ar', 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'C001', 'category': 'code_switching', 'priority': 'critical', 'user': 'الـ API بيرجع timeout كل شوية، أبدأ أراجع إيه؟', 'turns': [{'role': 'user', 'content': 'الـ API بيرجع timeout كل شوية، أبدأ أراجع إيه؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Answer naturally using Arabic with common English technical terms.', 'Suggest checking logs, network, upstream service, and timeout settings.', 'Keep the response short.'], 'forbidden_behavior': ['Translate every technical term into awkward Arabic.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 4, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'C002', 'category': 'code_switching', 'priority': 'critical', 'user': 'إيه الفرق بين pay-as-you-go وmonthly subscription؟', 'turns': [{'role': 'user', 'content': 'إيه الفرق بين pay-as-you-go وmonthly subscription؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Explain both billing approaches correctly.', 'Mention variable usage versus fixed recurring payment.'], 'forbidden_behavior': ['Invent specific prices.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 4, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'D001', 'category': 'asr_noise', 'priority': 'critical', 'user': 'عايز احجز معاد بكره الساعه تمانيه لا خليها تسعه', 'turns': [{'role': 'user', 'content': 'عايز احجز معاد بكره الساعه تمانيه لا خليها تسعه'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Interpret the final requested time as 9:00.', 'Do not preserve 8:00 as the selected time.'], 'forbidden_behavior': ['Schedule both times.'], 'checks': {'must_contain': [], 'must_contain_any': ['9', '٩', 'تسعه', 'تسعة', 'nine'], 'must_not_contain': [], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'D002', 'category': 'asr_noise', 'priority': 'critical', 'user': 'شغل التكييف على عشرين لا اربعه وعشرين', 'turns': [{'role': 'user', 'content': 'شغل التكييف على عشرين لا اربعه وعشرين'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Use 24 degrees as the final value.'], 'forbidden_behavior': ['Use 20 degrees.', 'Ask which value when the correction is clear.'], 'checks': {'must_contain': [], 'must_contain_any': ['24', '٢٤', 'أربعة وعشرين', 'اربعة وعشرين', 'أربع وعشرين'], 'must_not_contain': [], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'D003', 'category': 'asr_noise', 'priority': 'high', 'user': 'اجتماع الخميس تلاته احمد', 'turns': [{'role': 'user', 'content': 'اجتماع الخميس تلاته احمد'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Infer a likely meeting request.', 'Ask one concise clarification about the missing action.'], 'forbidden_behavior': ['Claim the meeting was created.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': ['اتعمل', 'اتحجز', 'تم إنشاء', 'created'], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': True, 'require_question': True, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'D005', 'category': 'asr_noise', 'priority': 'high', 'user': 'فكرني يوم ٢٥ الساعة ٧', 'turns': [{'role': 'user', 'content': 'فكرني يوم ٢٥ الساعة ٧'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Recognize Arabic-Indic numerals.', 'Ask for the month if it cannot be inferred safely.'], 'forbidden_behavior': ['Invent a month.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': True, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'E001', 'category': 'instruction_following', 'priority': 'critical', 'user': 'اشرحلي فايدة quantization في جملتين بس.', 'turns': [{'role': 'user', 'content': 'اشرحلي فايدة quantization في جملتين بس.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Use exactly two sentences.', 'Mention reduced memory and possibly faster inference.'], 'forbidden_behavior': ['Use more than two sentences.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'E003', 'category': 'instruction_following', 'priority': 'high', 'user': 'أنا عايز أحجز طيارة.', 'turns': [{'role': 'user', 'content': 'أنا عايز أحجز طيارة.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Ask one concise, high-value clarification question.'], 'forbidden_behavior': ['Ask multiple questions in one response.', 'Invent destination or travel date.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': True, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'E004', 'category': 'instruction_following', 'priority': 'high', 'user': 'هل 16 جيجا VRAM كفاية لتشغيل موديل 14B بكمية 4-bit؟ جاوب الأول وبعدين وضح.', 'turns': [{'role': 'user', 'content': 'هل 16 جيجا VRAM كفاية لتشغيل موديل 14B بكمية 4-bit؟ جاوب الأول وبعدين وضح.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Begin with a direct qualified answer.', 'Explain that practical fit depends on framework, KV cache, and context length.'], 'forbidden_behavior': ['Delay the answer with a long introduction.', 'Guarantee compatibility without qualification.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 4, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'G001', 'category': 'multi_turn_memory', 'priority': 'critical', 'user': 'أنا اسمي إيه؟', 'turns': [{'role': 'user', 'content': 'اسمي كريم.'}, {'role': 'assistant', 'content': 'أهلاً يا كريم.'}, {'role': 'user', 'content': 'أنا اسمي إيه؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Answer كريم.'], 'forbidden_behavior': ['Say the name is unknown.'], 'checks': {'must_contain': ['كريم'], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'G002', 'category': 'multi_turn_memory', 'priority': 'critical', 'user': 'الاجتماع مع مين؟', 'turns': [{'role': 'user', 'content': 'عندي اجتماع مع أحمد يوم الخميس.'}, {'role': 'assistant', 'content': 'تمام.'}, {'role': 'user', 'content': 'خليه الساعة أربعة.'}, {'role': 'assistant', 'content': 'تمام، الساعة أربعة.'}, {'role': 'user', 'content': 'الاجتماع مع مين؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Answer أحمد.'], 'forbidden_behavior': ['Lose the participant information.'], 'checks': {'must_contain': [], 'must_contain_any': ['أحمد', 'احمد'], 'must_not_contain': [], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'G003', 'category': 'multi_turn_memory', 'priority': 'critical', 'user': 'هتبعتها لمين؟', 'turns': [{'role': 'user', 'content': 'ابعت الرسالة لمحمود.'}, {'role': 'assistant', 'content': 'حاضر.'}, {'role': 'user', 'content': 'لا، قصدي محمد.'}, {'role': 'assistant', 'content': 'تمام، لمحمد.'}, {'role': 'user', 'content': 'هتبعتها لمين؟'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Answer محمد.'], 'forbidden_behavior': ['Answer محمود.'], 'checks': {'must_contain': ['محمد'], 'must_contain_any': [], 'must_not_contain': ['محمود'], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'J001', 'category': 'tool_calling', 'priority': 'critical', 'user': 'فكرني أكلم محمد بكرة الساعة خمسة.', 'turns': [{'role': 'user', 'content': 'فكرني أكلم محمد بكرة الساعة خمسة.'}], 'context': '', 'current_datetime': '2026-07-21T10:00:00+03:00', 'timezone': 'Africa/Cairo', 'expected_behavior': ['Call create_reminder.', 'Use 2026-07-22T17:00:00+03:00.', 'Use timezone Africa/Cairo.'], 'forbidden_behavior': ['Claim success before tool confirmation.', 'Use the wrong date.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': None, 'require_json': False, 'expect_tool': 'create_reminder', 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {'datetime': '2026-07-22T17:00:00+03:00', 'timezone': 'Africa/Cairo'}, 'expected_json': None}}, {'id': 'J002', 'category': 'tool_calling', 'priority': 'critical', 'user': 'فكرني أكلم محمد بكرة.', 'turns': [{'role': 'user', 'content': 'فكرني أكلم محمد بكرة.'}], 'context': '', 'current_datetime': '2026-07-21T10:00:00+03:00', 'timezone': 'Africa/Cairo', 'expected_behavior': ['Ask for the time.', 'Do not call the tool yet.'], 'forbidden_behavior': ['Invent a time.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': 2, 'require_json': False, 'expect_tool': None, 'forbid_tool': True, 'require_question': True, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'J003', 'category': 'tool_calling', 'priority': 'critical', 'user': 'خلي التكييف على عشرين، لا أربعة وعشرين.', 'turns': [{'role': 'user', 'content': 'خلي التكييف على عشرين، لا أربعة وعشرين.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Call set_device_temperature with 24.'], 'forbidden_behavior': ['Use 20.', 'Make two tool calls.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': None, 'require_json': False, 'expect_tool': 'set_device_temperature', 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {'temperature_c': 24}, 'expected_json': None}}, {'id': 'J005', 'category': 'tool_calling', 'priority': 'critical', 'user': 'احجز الاجتماع.', 'turns': [{'role': 'user', 'content': 'احجز الاجتماع.'}, {'role': 'assistant', 'content': '<tool_call create_calendar_event>'}, {'role': 'tool', 'content': '{"success": false, "error": "Calendar service unavailable"}'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['State that the meeting was not created.', 'Briefly mention the service error.'], 'forbidden_behavior': ['Say the event was successfully created.'], 'checks': {'must_contain': [], 'must_contain_any': ['مش', 'فشل', 'unavailable', 'خطأ', 'error', 'مقدرش', 'ما قدرتش', 'failed'], 'must_not_contain': ['اتحجز بنجاح', 'successfully created', 'تم إنشاء'], 'max_sentences': 3, 'require_json': False, 'expect_tool': None, 'forbid_tool': True, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': None}}, {'id': 'K001', 'category': 'structured_output', 'priority': 'critical', 'user': 'استخرج البيانات التالية في JSON فقط:\nاسمي كريم، عمري 29 سنة، وعايش في القاهرة.', 'turns': [{'role': 'user', 'content': 'استخرج البيانات التالية في JSON فقط:\nاسمي كريم، عمري 29 سنة، وعايش في القاهرة.'}], 'context': '', 'current_datetime': '', 'timezone': '', 'expected_behavior': ['Return valid JSON only.', 'Use name, age, and city fields.'], 'forbidden_behavior': ['Add Markdown code fences.', 'Add explanatory prose.'], 'checks': {'must_contain': [], 'must_contain_any': [], 'must_not_contain': [], 'max_sentences': None, 'require_json': True, 'expect_tool': None, 'forbid_tool': False, 'require_question': False, 'expect_lang': None, 'expect_tool_args': {}, 'expected_json': {'name': 'كريم', 'age': 29, 'city': 'القاهرة'}}}]
 
 
 # ---------------------------------------------------------------------------
@@ -787,6 +778,61 @@ class ResourceMonitor:
 # Voice-robot dataset loading
 # ---------------------------------------------------------------------------
 
+MIN_SUITE_PROMPTS = 20
+
+FALLBACK_TOOL_DEFINITIONS: list[dict[str, Any]] = [
+    {
+        "name": "create_reminder",
+        "description": "Create a reminder for the user.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "datetime": {"type": "string", "description": "ISO-8601 datetime"},
+                "timezone": {"type": "string"},
+            },
+            "required": ["title", "datetime", "timezone"],
+        },
+    },
+    {
+        "name": "set_device_temperature",
+        "description": "Set the temperature of a supported device.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "device": {"type": "string"},
+                "temperature_c": {"type": "number"},
+            },
+            "required": ["device", "temperature_c"],
+        },
+    },
+    {
+        "name": "create_calendar_event",
+        "description": "Create a calendar event.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "start_datetime": {"type": "string"},
+                "end_datetime": {"type": "string"},
+                "timezone": {"type": "string"},
+                "attendees": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["title", "start_datetime", "end_datetime", "timezone"],
+        },
+    },
+]
+
+FALLBACK_TOOL_INSTRUCTION = (
+    "\n\nAvailable tools (JSON schemas):\n"
+    + json.dumps(FALLBACK_TOOL_DEFINITIONS, ensure_ascii=False, indent=2)
+    + "\n\nWhen you need to call a tool, reply with ONLY this JSON object and nothing else:\n"
+    '{"tool": "<tool_name>", "arguments": {<args>}}\n'
+    "When you must ask a clarification or answer the user, reply in natural language (no tool JSON).\n"
+    "Never claim a tool action succeeded unless a tool result already confirmed success."
+)
+
+
 def _import_voice_robot_dataset() -> Any:
     """Load arabic_voice_robot_llm_dataset from script dir / work dir / sys.path."""
     candidates = []
@@ -797,10 +843,17 @@ def _import_voice_robot_dataset() -> Any:
             WORK_DIR,
             Path.cwd(),
             Path("/kaggle/working"),
+            Path("/content"),
             Path("/content/kaggle_working"),
+            INPUT_DIR,
         ]
     )
+    seen: set[str] = set()
     for parent in candidates:
+        key = str(parent)
+        if key in seen:
+            continue
+        seen.add(key)
         mod_path = parent / "arabic_voice_robot_llm_dataset.py"
         if not mod_path.exists():
             continue
@@ -809,10 +862,12 @@ def _import_voice_robot_dataset() -> Any:
             continue
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
+        print(f"Loaded dataset module: {mod_path}")
         return mod
     try:
         import arabic_voice_robot_llm_dataset as mod  # type: ignore
 
+        print("Loaded dataset module from sys.path")
         return mod
     except Exception:
         return None
@@ -821,14 +876,39 @@ def _import_voice_robot_dataset() -> Any:
 def build_dataset_payload(suite: str = DEFAULT_SUITE) -> dict[str, Any]:
     mod = _import_voice_robot_dataset()
     if mod is not None and hasattr(mod, "build_prompts_payload"):
-        return mod.build_prompts_payload(suite)
-    print("WARNING: arabic_voice_robot_llm_dataset.py not found — using tiny fallback prompts.")
+        payload = mod.build_prompts_payload(suite)
+        prompts = list(payload.get("prompts") or [])
+        if len(prompts) < MIN_SUITE_PROMPTS and (suite or "first").strip().lower() in {
+            "first",
+            "critical",
+            "crit",
+            "full",
+            "all",
+            "",
+        }:
+            print(
+                f"WARNING: dataset suite={suite!r} returned {len(prompts)} prompts "
+                f"(< {MIN_SUITE_PROMPTS}); falling back to embedded {len(BUILTIN_PROMPTS)} cases."
+            )
+            return {
+                "system": payload.get("system") or DEFAULT_SYSTEM,
+                "tool_definitions": payload.get("tool_definitions") or FALLBACK_TOOL_DEFINITIONS,
+                "tool_instruction": payload.get("tool_instruction") or FALLBACK_TOOL_INSTRUCTION,
+                "suite": suite,
+                "source": "builtin_first_round",
+                "prompts": list(BUILTIN_PROMPTS),
+            }
+        return payload
+    print(
+        f"WARNING: arabic_voice_robot_llm_dataset.py not found — "
+        f"using embedded first-round suite ({len(BUILTIN_PROMPTS)} prompts)."
+    )
     return {
         "system": DEFAULT_SYSTEM,
-        "tool_definitions": [],
-        "tool_instruction": "",
+        "tool_definitions": list(FALLBACK_TOOL_DEFINITIONS),
+        "tool_instruction": FALLBACK_TOOL_INSTRUCTION,
         "suite": suite,
-        "source": "fallback",
+        "source": "builtin_first_round",
         "prompts": list(BUILTIN_PROMPTS),
     }
 
@@ -837,6 +917,8 @@ def ensure_default_prompts_file(suite: str = DEFAULT_SUITE) -> Path:
     """Always refresh prompts.json from the voice-robot dataset (suite-filtered)."""
     payload = build_dataset_payload(suite)
     write_json(DEFAULT_PROMPTS_PATH, payload)
+    n = len(payload.get("prompts") or [])
+    print(f"Wrote prompts.json with {n} cases (suite={suite}, source={payload.get('source')})")
     return DEFAULT_PROMPTS_PATH
 
 
@@ -846,15 +928,48 @@ def load_prompts(path: Optional[Path] = None) -> tuple[str, list[dict[str, Any]]
     if prompt_path.exists():
         data = json.loads(prompt_path.read_text(encoding="utf-8"))
         if isinstance(data, list):
-            return DEFAULT_SYSTEM, data, meta
-        system = str(data.get("system") or DEFAULT_SYSTEM)
-        prompts = list(data.get("prompts") or BUILTIN_PROMPTS)
-        meta["tool_instruction"] = str(data.get("tool_instruction") or "")
-        meta["suite"] = data.get("suite") or DEFAULT_SUITE
-        meta["source"] = data.get("source") or "file"
-        meta["tool_definitions"] = data.get("tool_definitions") or []
+            prompts = data
+            system = DEFAULT_SYSTEM
+        else:
+            system = str(data.get("system") or DEFAULT_SYSTEM)
+            prompts = list(data.get("prompts") or [])
+            meta["tool_instruction"] = str(data.get("tool_instruction") or "")
+            meta["suite"] = data.get("suite") or DEFAULT_SUITE
+            meta["source"] = data.get("source") or "file"
+            meta["tool_definitions"] = data.get("tool_definitions") or []
+        # Stale / truncated prompts.json from older pilot runs — refresh to full suite.
+        if len(prompts) < MIN_SUITE_PROMPTS:
+            if path is None:
+                print(
+                    f"WARNING: {prompt_path} has only {len(prompts)} prompts; "
+                    f"refreshing to >= {MIN_SUITE_PROMPTS} first-round cases."
+                )
+                ensure_default_prompts_file(str(meta.get("suite") or DEFAULT_SUITE))
+                return load_prompts(DEFAULT_PROMPTS_PATH)
+            print(
+                f"WARNING: custom prompts file has only {len(prompts)} prompts "
+                f"(< {MIN_SUITE_PROMPTS}). Prefer the default first-round suite."
+            )
+        if not prompts:
+            prompts = list(BUILTIN_PROMPTS)
+            meta["source"] = "builtin_first_round"
+            meta["tool_definitions"] = list(FALLBACK_TOOL_DEFINITIONS)
+            meta["tool_instruction"] = FALLBACK_TOOL_INSTRUCTION
+        if not meta.get("tool_definitions"):
+            meta["tool_definitions"] = list(FALLBACK_TOOL_DEFINITIONS)
+        if not meta.get("tool_instruction"):
+            meta["tool_instruction"] = FALLBACK_TOOL_INSTRUCTION
         return system, prompts, meta
-    return DEFAULT_SYSTEM, list(BUILTIN_PROMPTS), meta
+    return (
+        DEFAULT_SYSTEM,
+        list(BUILTIN_PROMPTS),
+        {
+            **meta,
+            "source": "builtin_first_round",
+            "tool_definitions": list(FALLBACK_TOOL_DEFINITIONS),
+            "tool_instruction": FALLBACK_TOOL_INSTRUCTION,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -2688,6 +2803,18 @@ def main(
         f"Prompts file: {prompts_path} | suite={prompt_meta.get('suite') or suite} "
         f"| source={prompt_meta.get('source')} | cases={len(prompts)}"
     )
+    if len(prompts) < MIN_SUITE_PROMPTS:
+        if prompts_file is None:
+            raise SystemExit(
+                f"ERROR: only {len(prompts)} prompts loaded (need >= {MIN_SUITE_PROMPTS}). "
+                "Upload arabic_voice_robot_llm_dataset.py next to this script, or omit "
+                "--prompts-file so the embedded first-round suite is used."
+            )
+        print(
+            f"WARNING: custom --prompts-file has only {len(prompts)} prompts "
+            f"(default suite expects >= {MIN_SUITE_PROMPTS})."
+        )
+    print(f"Prompt IDs ({len(prompts)}): {[p.get('id') for p in prompts]}")
     print(f"Models: {model_names}")
     disabled = [n for n, on in ENABLE.items() if not on and n in MODEL_ORDER]
     if disabled and not only:

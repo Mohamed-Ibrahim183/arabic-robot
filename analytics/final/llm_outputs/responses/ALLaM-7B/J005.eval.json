@@ -1,0 +1,28 @@
+{
+  "prompt_id": "J005",
+  "category": "tool_calling",
+  "priority": "critical",
+  "expected_behavior": [
+    "State that the meeting was not created.",
+    "Briefly mention the service error."
+  ],
+  "forbidden_behavior": [
+    "Say the event was successfully created."
+  ],
+  "response_text": "عذرًا، لا أستطيع حجز الاجتماع في الوقت الحالي. الخدمة غير متاحة.",
+  "auto_pass": false,
+  "auto_failures": [
+    "missing any of: ['مش', 'فشل', 'unavailable', 'خطأ', 'error', 'مقدرش', 'ما قدرتش', 'failed']"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 1.0,
+  "overall_score": 3.35,
+  "sentence_count": 2
+}

@@ -1,0 +1,30 @@
+{
+  "prompt_id": "J001",
+  "category": "tool_calling",
+  "priority": "critical",
+  "expected_behavior": [
+    "Call create_reminder.",
+    "Use 2026-07-22T17:00:00+03:00.",
+    "Use timezone Africa/Cairo."
+  ],
+  "forbidden_behavior": [
+    "Claim success before tool confirmation.",
+    "Use the wrong date."
+  ],
+  "response_text": "تمام، أنا هعملك ريميندر تكلمنا فيه بكرة الساعة خمسة.",
+  "auto_pass": false,
+  "auto_failures": [
+    "expected tool 'create_reminder'"
+  ],
+  "auto_notes": [],
+  "valid_json": null,
+  "parsed_tool": null,
+  "language_score": 5,
+  "correctness_score": 1,
+  "instruction_following_score": 2,
+  "conciseness_score": 5,
+  "tts_suitability_score": 5,
+  "tool_accuracy": 0.0,
+  "overall_score": 2.6,
+  "sentence_count": 1
+}
