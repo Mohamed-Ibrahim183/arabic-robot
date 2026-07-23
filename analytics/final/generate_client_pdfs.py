@@ -431,6 +431,130 @@ def load_llm_examples(model: str, prompt_ids: list[str], prompt_lookup: dict[str
     return examples
 
 
+def wrap_ar_block(text: str, width: int = 95) -> str:
+    """Wrap then shape Arabic line-by-line for matplotlib."""
+    text = (text or "").replace("\n", " ").strip()
+    if not text:
+        return ""
+    lines = textwrap.wrap(text, width=width)
+    return "\n".join(ar_display(line) for line in lines)
+
+
+def load_asr_reference_text() -> tuple[str, str]:
+    """Return (text, source_label) for the ASR comparison ground truth."""
+    candidates = [
+        ROOT.parents[1] / "test-text.txt",
+        Path.cwd() / "test-text.txt",
+        ROOT / "asr_outputs" / "test-text.txt",
+    ]
+    for path in candidates:
+        if path.exists() and path.stat().st_size > 0:
+            return path.read_text(encoding="utf-8").strip(), path.name
+    return "", "missing"
+
+
+def load_asr_transcripts(models: list[str]) -> dict[str, str]:
+    """Load per-model transcript .txt files from asr_outputs."""
+    src = ROOT / "asr_outputs"
+    out: dict[str, str] = {}
+    for model in models:
+        # Preferred naming from bake-off: Model__VoiceTut-TTS.txt
+        candidates = [
+            src / f"{model}__VoiceTut-TTS.txt",
+            src / f"{model}.txt",
+        ]
+        # Also accept any file starting with model name
+        candidates.extend(sorted(src.glob(f"{model}__*.txt")))
+        for path in candidates:
+            if path.exists():
+                out[model] = path.read_text(encoding="utf-8").strip()
+                break
+    return out
+
+
+def asr_reference_page(pdf: PdfPages, text: str, source: str, page: int, total: int) -> None:
+    fig = plt.figure(figsize=(11, 8.5))
+    header_bar(fig, "ASR")
+    fig.suptitle("Reference text (ground truth to compare)", fontsize=15, fontweight="bold", color=C_NAVY, y=0.945)
+    fig.text(
+        0.5,
+        0.905,
+        f"Source: {source}  ·  This is the spoken script used to score WER / CER / accuracy",
+        ha="center",
+        fontsize=8.5,
+        color=C_GRAY,
+    )
+    ax = fig.add_axes([0.06, 0.08, 0.88, 0.78])
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=C_SOFT, edgecolor=C_LINE, linewidth=1, transform=ax.transAxes))
+    body = wrap_ar_block(text, width=100)
+    ax.text(0.04, 0.96, body, fontsize=7.6, color="#2d3748", transform=ax.transAxes, va="top", linespacing=1.45)
+    footer(fig, page, total, "ASR")
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def asr_transcript_pages(
+    pdf: PdfPages,
+    lb: list[dict],
+    transcripts: dict[str, str],
+    start_page: int,
+    total: int,
+    per_page: int = 2,
+) -> int:
+    """Emit transcript pages (per_page models each). Returns next page number."""
+    page = start_page
+    rows = [r for r in lb if r.get("model") in transcripts]
+    for i in range(0, len(rows), per_page):
+        chunk = rows[i : i + per_page]
+        fig = plt.figure(figsize=(11, 8.5))
+        header_bar(fig, "ASR")
+        fig.suptitle("Model transcript results (vs reference)", fontsize=15, fontweight="bold", color=C_NAVY, y=0.945)
+        fig.text(
+            0.5,
+            0.905,
+            "Raw ASR output text files  ·  compare visually to the reference page  ·  Acc% HIGHER better · WER LOWER better",
+            ha="center",
+            fontsize=8.2,
+            color=C_GRAY,
+        )
+        n = len(chunk)
+        top = 0.86
+        bottom = 0.05
+        card_h = (top - bottom) / n - 0.015
+        y = top
+        for r in chunk:
+            model = r["model"]
+            text = transcripts.get(model, "")
+            acc = fnum(r, "avg_accuracy_percent")
+            wer = fnum(r, "avg_wer")
+            cer = fnum(r, "avg_cer")
+            ax = fig.add_axes([0.06, y - card_h, 0.88, card_h])
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.axis("off")
+            ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=C_LINE, linewidth=0.9, transform=ax.transAxes))
+            ax.add_patch(plt.Rectangle((0, 0), 0.01, 1, facecolor=C_TEAL, transform=ax.transAxes, clip_on=False))
+            meta = (
+                f"{model}   ·   Acc {fmt_metric(acc, 1)}%   ·   WER {fmt_metric(wer, 3)}   ·   CER {fmt_metric(cer, 3)}   ·   "
+                f"{len(text)} chars"
+            )
+            ax.text(0.025, 0.90, meta, fontsize=8.0, color=C_NAVY, transform=ax.transAxes, fontweight="bold", va="top")
+            # Fit as much transcript as the card allows
+            max_chars = 1100 if n <= 2 else 700
+            shown = text if len(text) <= max_chars else text[: max_chars - 1].rstrip() + "…"
+            body = wrap_ar_block(shown, width=98)
+            ax.text(0.025, 0.78, body, fontsize=6.8, color="#2d3748", transform=ax.transAxes, va="top", linespacing=1.35)
+            y -= card_h + 0.015
+        footer(fig, page, total, "ASR")
+        pdf.savefig(fig)
+        plt.close(fig)
+        page += 1
+    return page
+
+
 def llm_examples_page(
     pdf: PdfPages,
     model: str,
@@ -1178,9 +1302,14 @@ def build_asr_pdf() -> Path:
     ranking = read_csv(src / "asr_accuracy_ranking.csv")
     picks = recs.get("picks") or {}
     names = [short(r["model"]) for r in lb]
+    models = [r["model"] for r in lb]
+    ref_text, ref_source = load_asr_reference_text()
+    transcripts = load_asr_transcripts(models)
+    transcript_pages = (len([m for m in models if m in transcripts]) + 1) // 2  # 2 per page
+    extra_pages = (1 if ref_text else 0) + transcript_pages
 
     out = OUT_DIR / "ASR_Model_Selection_Report.pdf"
-    total = 11
+    total = 11 + extra_pages
     with PdfPages(out) as pdf:
         cover(
             pdf,
@@ -1199,6 +1328,7 @@ def build_asr_pdf() -> Path:
                 "WER (Word Error Rate): LOWER better. Accuracy %: HIGHER better (approx. 1 - WER).",
                 f"Top composite pick: {picks.get('best_for_robot_realtime', {}).get('model', '—')}.",
                 f"Top accuracy pick: {picks.get('best_accuracy', {}).get('model', '—')}.",
+                f"Transcript evidence: reference ({ref_source}) + {len(transcripts)} model result text files.",
             ],
             [
                 "Page 2: methodology, test conditions, and limitations.",
@@ -1206,7 +1336,8 @@ def build_asr_pdf() -> Path:
                 "Page 4: recommended picks with rationale.",
                 "Page 5: full leaderboard evidence table.",
                 "Pages 6-10: accuracy, speed, WER/CER, VRAM, and score charts.",
-                "Page 11: selection guidance and sign-off checklist.",
+                f"Pages 11-{10 + extra_pages}: reference text + model transcript result files.",
+                f"Page {total}: selection guidance and sign-off checklist.",
             ],
             "ASR",
             total,
@@ -1485,7 +1616,15 @@ def build_asr_pdf() -> Path:
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P11 ranking + guidance
+        # Reference + model transcript text files
+        next_page = 11
+        if ref_text:
+            asr_reference_page(pdf, ref_text, ref_source, next_page, total)
+            next_page += 1
+        if transcripts:
+            next_page = asr_transcript_pages(pdf, lb, transcripts, next_page, total, per_page=2)
+
+        # Final ranking + guidance
         fig = plt.figure(figsize=(11, 8.5))
         header_bar(fig, "ASR")
         fig.suptitle("Accuracy ranking & selection guidance", fontweight="bold", color=C_NAVY, y=0.95)
@@ -1510,11 +1649,11 @@ def build_asr_pdf() -> Path:
                 "2) If accuracy is the hard constraint → Whisper-Large-v3-CT2.",
                 "3) If GPU is tight / multi-model → Whisper-Small-CT2 (lowest VRAM, still decent).",
                 "4) Skip Qwen ASR / QwenCleo for this Egyptian Arabic use case based on current WER.",
-                "5) Re-validate on your microphone noise and dialect samples before freeze.",
+                "5) Compare transcript pages against the reference text before freeze.",
                 "6) Confirm combined VRAM with chosen LLM + TTS still fits the target GPU.",
             ],
         )
-        footer(fig, 11, total, "ASR")
+        footer(fig, total, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
