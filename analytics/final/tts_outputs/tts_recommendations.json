@@ -1,7 +1,137 @@
 {
-  "status": "no_successful_models",
-  "picks": {},
+  "status": "ok",
+  "picks": {
+    "best_for_robot_realtime": {
+      "model": "VoiceTut-TTS",
+      "why": "Best composite of RTF + throughput + low VRAM + fast load.",
+      "metrics": {
+        "score_robot_realtime": 90.02,
+        "rtf": 0.157,
+        "chars_per_second": 82.7,
+        "peak_vram_mb": 3150.2
+      },
+      "listen_file": "VoiceTut-TTS.wav"
+    },
+    "best_speed": {
+      "model": "VoiceTut-TTS",
+      "why": "Lowest RTF (generation faster relative to audio length).",
+      "metrics": {
+        "rtf": 0.157,
+        "x_realtime": 6.39,
+        "generation_seconds": 20.48
+      }
+    },
+    "best_throughput": {
+      "model": "VoiceTut-TTS",
+      "why": "Highest characters synthesized per second.",
+      "metrics": {
+        "chars_per_second": 82.7
+      }
+    },
+    "lowest_vram": {
+      "model": "VoiceTut-TTS",
+      "why": "Lowest peak VRAM — better for 6–16 GB GPUs.",
+      "metrics": {
+        "peak_vram_mb": 3150.2
+      }
+    },
+    "best_balanced": {
+      "model": "VoiceTut-TTS",
+      "why": "Balanced speed/throughput/VRAM/generation time.",
+      "metrics": {
+        "score_balanced": 100.0
+      }
+    },
+    "best_realtime_capable": {
+      "model": "VoiceTut-TTS",
+      "why": "RTF < 1.0 (faster than real time).",
+      "metrics": {
+        "rtf": 0.157
+      }
+    }
+  },
+  "leaderboard_top3": [
+    {
+      "model": "VoiceTut-TTS",
+      "status": "ok",
+      "rtf": 0.157,
+      "x_realtime": 6.39,
+      "chars_per_second": 82.7,
+      "generation_seconds": 20.48,
+      "load_seconds": 109.67,
+      "audio_seconds": 130.77,
+      "peak_vram_mb": 3150.2,
+      "peak_ram_mb": 3840.8,
+      "peak_cpu_percent": 181.4,
+      "realtime_capable": "yes",
+      "score_speed": 100.0,
+      "score_throughput": 100.0,
+      "score_vram_efficiency": 100.0,
+      "score_load": 33.45,
+      "score_balanced": 100.0,
+      "score_robot_realtime": 90.02,
+      "wav_file": "VoiceTut-TTS.wav",
+      "note": "Listen to WAV for Egyptian/code-switch quality; scores cover speed/resources only.",
+      "rank_robot": 1,
+      "rank_speed": 1,
+      "rank_vram": 1
+    },
+    {
+      "model": "SILMA-TTS",
+      "status": "ok",
+      "rtf": 0.238,
+      "x_realtime": 4.21,
+      "chars_per_second": 46.8,
+      "generation_seconds": 36.16,
+      "load_seconds": 70.27,
+      "audio_seconds": 152.19,
+      "peak_vram_mb": 3340.2,
+      "peak_ram_mb": 3293.5,
+      "peak_cpu_percent": 180.3,
+      "realtime_capable": "yes",
+      "score_speed": 92.47,
+      "score_throughput": 48.2,
+      "score_vram_efficiency": 93.48,
+      "score_load": 64.59,
+      "score_balanced": 78.35,
+      "score_robot_realtime": 77.42,
+      "wav_file": "SILMA-TTS.wav",
+      "note": "Listen to WAV for Egyptian/code-switch quality; scores cover speed/resources only.",
+      "rank_robot": 2,
+      "rank_speed": 2,
+      "rank_vram": 2
+    },
+    {
+      "model": "Chatterbox-Multilingual-V3",
+      "status": "ok",
+      "rtf": 1.101,
+      "x_realtime": 0.91,
+      "chars_per_second": 13.4,
+      "generation_seconds": 126.29,
+      "load_seconds": 25.45,
+      "audio_seconds": 114.68,
+      "peak_vram_mb": 4790.2,
+      "peak_ram_mb": 5189.2,
+      "peak_cpu_percent": 123.7,
+      "realtime_capable": "no",
+      "score_speed": 12.19,
+      "score_throughput": 0.0,
+      "score_vram_efficiency": 43.76,
+      "score_load": 100.0,
+      "score_balanced": 14.6,
+      "score_robot_realtime": 28.63,
+      "wav_file": "Chatterbox-Multilingual-V3.wav",
+      "note": "Listen to WAV for Egyptian/code-switch quality; scores cover speed/resources only.",
+      "rank_robot": 3,
+      "rank_speed": 3,
+      "rank_vram": 3
+    }
+  ],
+  "model_count_ok": 4,
   "notes": [
-    "No successful TTS runs; cannot recommend a model."
+    "IMPORTANT: Naturalness / Egyptian dialect / code-switch quality must be judged by listening to WAVs.",
+    "Automated scores only cover latency and resource fit for the robot pipeline.",
+    "RTF < 1.0 is preferred for near-real-time synthesis; streaming TTFA is not measured here.",
+    "For production, also measure time-to-first-audio with streaming APIs."
   ]
 }

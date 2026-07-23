@@ -114,10 +114,10 @@ DEFAULT_TEXT = (
 )
 
 ENABLE = {
+    "SILMA-TTS": True,
     "VoiceTut-TTS": True,
     "NAMAA-Egyptian-TTS": True,
     "Chatterbox-Multilingual-V3": True,
-    "SILMA-TTS": True,
     # "Kokoro-82M": True,
     # "Qwen3-TTS-0.6B": True,
     # "CosyVoice-0.5B": True,
@@ -126,10 +126,10 @@ ENABLE = {
 
 # Order: Arabic refs first, then models that need a reference / can crash CUDA.
 MODEL_ORDER = [
+    "SILMA-TTS",
     "NAMAA-Egyptian-TTS",
     "Chatterbox-Multilingual-V3",
     "VoiceTut-TTS",
-    "SILMA-TTS",
     # "Kokoro-82M",
     # "Qwen3-TTS-0.6B",
     # "CosyVoice-0.5B",
@@ -169,9 +169,12 @@ subprocess.check_call([
     "espeak-ng", "sox", "libsox-dev", "ffmpeg", "git", "git-lfs",
 ])
 
+# Keep Kaggle's NumPy 2.x stack. Forcing 1.26.4 fights modern pandas/scipy/transformers
+# wheels and recreates "numpy.dtype size changed" (Expected 96, got 88).
 _pip("soundfile", "torchaudio", "librosa", "numpy", "huggingface_hub", "safetensors", "omegaconf", "einops")
 
-# VoiceTut needs transformers>=5.3 for HiggsAudioV2TokenizerModel
+# VoiceTut needs transformers>=5.3 for HiggsAudioV2TokenizerModel.
+# Chatterbox 0.1.7 pins transformers==5.2.0 — workers re-pin per model at runtime.
 _pip("-U", "transformers>=5.3.0")
 _pip("omnivoice", "voicetut-tts")
 _pip("-U", "transformers>=5.3.0")  # re-assert after omnivoice deps
@@ -184,16 +187,53 @@ _pip(
 )
 _pip("-U", "qwen-tts")
 _pip("kokoro>=0.9.4")
-# Versions before 1.0.4 did not include the packaged Arabic reference WAV.
-_pip("-U", "silma-tts>=1.0.4")
+# SILMA metadata still pins numpy<=1.26.4 (stale). Install without deps so it cannot
+# downgrade the shared NumPy and break every other model. Versions before 1.0.4
+# did not include the packaged Arabic reference WAV.
+# PyPI name is cached-path (import cached_path). Keep these explicit because
+# silma-tts is installed with --no-deps to protect the shared NumPy stack.
+_pip(
+    "cached-path", "click", "ema_pytorch>=0.5.2", "vocos", "x_transformers>=1.31.14",
+    "nemo_text_processing==1.1.0", "torchdiffeq",
+    "transformers_stream_generator", "unidecode", "pydub", "tomli", "tqdm",
+)
+# catt_tashkeel pulls onnxruntime-gpu (libcudart.so.13) — install without deps.
+_pip("--no-deps", "catt_tashkeel==1.0.2")
+_pip("--no-deps", "-U", "silma-tts>=1.0.4")
 _pip("HyperPyYAML", "wetext", "modelscope", "pyarrow", "openai-whisper", "onnxruntime")
-_pip("pyrootutils", "loguru", "lightning", "hydra-core", "tiktoken", "vector_quantize_pytorch")
+_pip("pyrootutils", "loguru", "lightning", "hydra-core>=1.3.0", "tiktoken", "vector_quantize_pytorch")
 
 # Analytics dependencies (CPU/RAM/GPU sampling)
 _pip("psutil", "nvidia-ml-py")
 
 # Keep transformers new enough for VoiceTut after all other installs.
 _pip("-U", "transformers>=5.3.0")
+
+# Align binary wheels to whatever NumPy resolved to (usually 2.x on current Kaggle).
+def _numpy_abi_ok():
+    return subprocess.run(
+        [sys.executable, "-c",
+         "import numpy as np\n"
+         "for m in ('pandas._libs.tslibs.np_datetime','scipy.special._ufuncs'):\n"
+         "  try:\n"
+         "    __import__(m)\n"
+         "  except ModuleNotFoundError:\n"
+         "    pass\n"
+         "  except Exception as e:\n"
+         "    s=str(e)\n"
+         "    if 'dtype size changed' in s or 'binary incompatibility' in s:\n"
+         "      raise\n"],
+        capture_output=True,
+    ).returncode == 0
+
+if not _numpy_abi_ok():
+    print("NumPy ABI mismatch — reinstalling pandas/scipy/pyarrow against current numpy…")
+    for _pkg in ("pandas", "scipy", "pyarrow"):
+        try:
+            _pip("--force-reinstall", "--no-cache-dir", _pkg)
+        except Exception as _exc:
+            print(f"  optional {_pkg} reinstall failed: {_exc}")
+    print("NumPy ABI repair:", "OK" if _numpy_abi_ok() else "STILL BROKEN")
 
 def _import_ok(mod):
     return subprocess.run([sys.executable, "-c", f"import {mod}"], capture_output=True).returncode == 0
@@ -209,6 +249,81 @@ if not _import_ok("onnxruntime"):
         _pip("--no-cache-dir", "onnxruntime")
     print("onnxruntime CPU reinstall:", "OK" if _import_ok("onnxruntime") else "STILL BROKEN")
 
+# SILMA metadata wants torchvision>=0.21 which often breaks Kaggle's torch pairing
+# ("operator torchvision::nms does not exist") — CPU wheels against CUDA torch, or
+# a newer torchvision than the preinstalled torch. Always verify version pairing.
+_tv_map = {
+    "2.12": "0.27.0", "2.11": "0.26.0", "2.10": "0.25.0", "2.9": "0.24.0",
+    "2.8": "0.23.0", "2.7": "0.22.1", "2.6": "0.21.0", "2.5": "0.20.1",
+    "2.4": "0.19.1", "2.3": "0.18.1",
+}
+_tv_probe = (
+    "import torch, torchvision, sys\n"
+    "tv_map = " + repr(_tv_map) + "\n"
+    "t = torch.__version__.split('+')[0]\n"
+    "mm = '.'.join(t.split('.')[:2])\n"
+    "need = tv_map.get(mm)\n"
+    "got = '.'.join(torchvision.__version__.split('+')[0].split('.')[:2])\n"
+    "import torchvision.ops\n"
+    "if need and got != '.'.join(need.split('.')[:2]):\n"
+    "    sys.exit(2)\n"
+)
+_tv_ok = subprocess.run([sys.executable, "-c", _tv_probe], capture_output=True).returncode == 0
+if not _tv_ok:
+    _out = subprocess.run(
+        [sys.executable, "-c", "import torch; print(torch.__version__); print(getattr(torch.version,'cuda',None) or '')"],
+        capture_output=True, text=True,
+    ).stdout.strip().splitlines()
+    _tver = _out[0] if _out else ""
+    _cuda = _out[1] if len(_out) > 1 else ""
+    _mm = ".".join(_tver.split("+")[0].split(".")[:2]) if _tver else ""
+    _tv = _tv_map.get(_mm)
+    _tags = []
+    if _cuda:
+        _digits = "".join(ch for ch in _cuda if ch.isdigit() or ch == ".")
+        _parts = _digits.split(".")
+        if len(_parts) >= 2:
+            _tags.append(f"cu{_parts[0]}{_parts[1]}")
+        # Kaggle T4 images often report 12.x while wheels live under a nearby tag.
+        for _alt in ("cu124", "cu121", "cu118"):
+            if _alt not in _tags:
+                _tags.append(_alt)
+    print(f"Repairing torchvision for torch {_tver} (tags={_tags or ['cpu']})…")
+    _attempts = []
+    if _tv:
+        for _tag in _tags:
+            _attempts.append(("--force-reinstall", "--no-deps", "--no-cache-dir", f"torchvision=={_tv}",
+                              "--index-url", f"https://download.pytorch.org/whl/{_tag}"))
+        _attempts.append(("--force-reinstall", "--no-deps", "--no-cache-dir", f"torchvision=={_tv}"))
+    for _args in _attempts:
+        try:
+            _pip(*_args)
+        except Exception:
+            continue
+        if subprocess.run([sys.executable, "-c", _tv_probe], capture_output=True).returncode == 0:
+            break
+    print(
+        "torchvision repair:",
+        "OK" if subprocess.run([sys.executable, "-c", _tv_probe], capture_output=True).returncode == 0
+        else "STILL BROKEN",
+    )
+
+# torchcodec: SILMA declares it but does not import it. Drop broken CUDA-13 wheels.
+if not _import_ok("torchcodec"):
+    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchcodec"], capture_output=True)
+    try:
+        _pip("--no-cache-dir", "--index-url", "https://download.pytorch.org/whl/cpu", "torchcodec")
+    except Exception:
+        try:
+            _pip("--no-cache-dir", "torchcodec==0.9.1")
+        except Exception:
+            pass
+    if not _import_ok("torchcodec"):
+        subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchcodec"], capture_output=True)
+        print("torchcodec: removed (unused by SILMA runtime)")
+    else:
+        print("torchcodec CPU reinstall: OK")
+
 # Fix pynini (SILMA/NeMo): corrupted bundled OpenFst .so ("cannot read file data").
 if not _import_ok("pynini"):
     try:
@@ -217,7 +332,7 @@ if not _import_ok("pynini"):
         _pip("--force-reinstall", "--no-cache-dir", "pynini")
     print("pynini force reinstall:", "OK" if _import_ok("pynini") else "STILL BROKEN")
 
-print("Packages installed. transformers>=5.3.0 pinned for VoiceTut.")
+print("Packages installed. NumPy ABI aligned + matched torchvision; per-model pins in workers.")
 '''
 
 
@@ -375,8 +490,80 @@ def trim_wav_head(src: Path, dest: Path, max_seconds: float) -> Path:
     return dest
 
 
+# Chatterbox 0.1.7 pins transformers==5.2.0; VoiceTut/omnivoice need >=5.3.0 for
+# HiggsAudioV2TokenizerModel. Workers re-pin before importing (shared site-packages).
+# Binary packages that commonly break across NumPy major versions.
+_NUMPY_ABI_PKGS = ("pandas", "scipy", "pyarrow")
+CHATTERBOX_TRANSFORMERS = "5.2.0"
+VOICETUT_TRANSFORMERS = ">=5.3.0"
+
+# torch X.Y -> torchvision (mismatch causes: operator torchvision::nms does not exist)
+_TORCH_TO_VISION = {
+    "2.12": "0.27.0",
+    "2.11": "0.26.0",
+    "2.10": "0.25.0",
+    "2.9": "0.24.0",
+    "2.8": "0.23.0",
+    "2.7": "0.22.1",
+    "2.6": "0.21.0",
+    "2.5": "0.20.1",
+    "2.4": "0.19.1",
+    "2.3": "0.18.1",
+    "2.2": "0.17.2",
+    "2.1": "0.16.2",
+}
+
+# SILMA is installed with --no-deps; these must be present before `import silma_tts`.
+# (import_name, pip_requirement) — covers the full silma-tts requires_dist minus torch*.
+_SILMA_RUNTIME_DEPS: tuple[tuple[str, str], ...] = (
+    ("cached_path", "cached-path"),
+    ("hydra", "hydra-core>=1.3.0"),
+    ("ema_pytorch", "ema_pytorch>=0.5.2"),
+    ("vocos", "vocos"),
+    ("x_transformers", "x_transformers>=1.31.14"),
+    ("torchdiffeq", "torchdiffeq"),
+    ("tomli", "tomli"),
+    ("pydub", "pydub"),
+    ("unidecode", "unidecode"),
+    ("click", "click"),
+    ("tqdm", "tqdm"),
+    ("librosa", "librosa"),
+    ("soundfile", "soundfile"),
+    ("safetensors", "safetensors"),
+    ("transformers_stream_generator", "transformers_stream_generator"),
+    ("nemo_text_processing", "nemo_text_processing==1.1.0"),
+    ("catt_tashkeel", "catt_tashkeel==1.0.2"),
+)
+
+
 def _pip(*args: str) -> None:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", *args])
+
+
+def _purge_modules(*prefixes: str) -> None:
+    for name in list(sys.modules):
+        if any(name == p or name.startswith(p + ".") for p in prefixes):
+            del sys.modules[name]
+
+
+def _native_ext_already_imported() -> bool:
+    """True if numpy/torch/torchvision C-extensions are already in this process.
+
+    Force-reinstall + sys.modules purge then re-import raises:
+    ImportError: cannot load module more than once per process
+    """
+    return any(name in sys.modules for name in ("numpy", "torch", "torchvision"))
+
+
+def _refuse_native_reinstall(what: str, *module_names: str) -> None:
+    loaded = [m for m in (module_names or (what.split("/")[0],)) if m in sys.modules]
+    if not loaded:
+        return
+    raise ImportError(
+        f"{what} needs a reinstall, but {', '.join(loaded)} already imported "
+        "in this worker (cannot reload native modules). "
+        "Restart the Kaggle session and re-run so preflight can repair before torch loads."
+    )
 
 
 def ensure_module(module_name: str, *packages: str, upgrade: bool = False, no_deps: bool = False) -> None:
@@ -404,14 +591,249 @@ def _import_works(module_name: str) -> bool:
         subprocess.run(
             [sys.executable, "-c", f"import {module_name}"],
             capture_output=True,
+            env=os.environ.copy(),
         ).returncode
         == 0
     )
 
 
+def _run_probe(code: str) -> tuple[bool, str]:
+    """Run a short Python snippet in a clean interpreter; return (ok, stderr_tail)."""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        env=os.environ.copy(),
+    )
+    err = (result.stderr or result.stdout or "")[-800:]
+    return result.returncode == 0, err
+
+
+def _torch_version_info() -> tuple[str, str]:
+    """Return (torch_version, cuda_version_or_empty) without importing torchvision."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import torch; print(torch.__version__); print(getattr(torch.version, 'cuda', None) or '')",
+        ],
+        capture_output=True,
+        text=True,
+        env=os.environ.copy(),
+    )
+    if result.returncode != 0:
+        return "", ""
+    parts = result.stdout.strip().splitlines()
+    ver = parts[0].strip() if parts else ""
+    cuda = parts[1].strip() if len(parts) > 1 else ""
+    return ver, cuda
+
+
+def _cuda_wheel_tag(cuda_ver: str) -> str:
+    """Map torch.version.cuda (e.g. '12.1') to a PyTorch wheel tag (cu121)."""
+    if not cuda_ver:
+        return "cpu"
+    digits = "".join(ch for ch in cuda_ver if ch.isdigit() or ch == ".")
+    parts = digits.split(".")
+    if len(parts) >= 2:
+        return f"cu{parts[0]}{parts[1]}"
+    if parts and parts[0]:
+        return f"cu{parts[0]}"
+    return "cpu"
+
+
+def _cuda_wheel_tags(cuda_ver: str) -> list[str]:
+    """Ordered PyTorch wheel tags to try for a reported CUDA version."""
+    tags: list[str] = []
+    primary = _cuda_wheel_tag(cuda_ver)
+    if primary != "cpu":
+        tags.append(primary)
+    for alt in ("cu124", "cu121", "cu118"):
+        if alt not in tags:
+            tags.append(alt)
+    return tags
+
+
+def _torchvision_probe_code() -> str:
+    """Import torchvision.ops and verify minor version pairs with torch."""
+    return (
+        "import sys\n"
+        "import torch\n"
+        "import torchvision\n"
+        "import torchvision.ops\n"
+        f"tv_map = {_TORCH_TO_VISION!r}\n"
+        "t = torch.__version__.split('+')[0]\n"
+        "mm = '.'.join(t.split('.')[:2])\n"
+        "need = tv_map.get(mm)\n"
+        "got = '.'.join(torchvision.__version__.split('+')[0].split('.')[:2])\n"
+        "if need and got != '.'.join(need.split('.')[:2]):\n"
+        "    print(f'mismatch torch={torch.__version__} torchvision={torchvision.__version__} need~={need}')\n"
+        "    sys.exit(2)\n"
+        "print(torch.__version__, torchvision.__version__)\n"
+    )
+
+
+def ensure_torchvision_match() -> None:
+    """Repair torch/torchvision mismatch ('operator torchvision::nms does not exist').
+
+    SILMA's torchvision>=0.21 dependency often upgrades torchvision past the
+    build that matches Kaggle's preinstalled torch, or pulls a CPU wheel against
+    a CUDA torch. Either case breaks transformers model imports (LlamaModel).
+
+    Pip reinstall is safe even if `torch` is already imported in this process,
+    as long as `torchvision` itself has not been imported yet. Subprocess probes
+    always see the on-disk wheel.
+    """
+    ok, _ = _run_probe(_torchvision_probe_code())
+    if ok:
+        return
+
+    if "torchvision" in sys.modules:
+        _refuse_native_reinstall("torchvision", "torchvision")
+
+    torch_ver, cuda_ver = _torch_version_info()
+    if not torch_ver:
+        print("WARNING: cannot read torch version; skipping torchvision repair")
+        return
+
+    mm = ".".join(torch_ver.split("+")[0].split(".")[:2])
+    tv_ver = _TORCH_TO_VISION.get(mm)
+    tags = _cuda_wheel_tags(cuda_ver)
+    print(
+        f"torchvision/torch mismatch — reinstalling torchvision"
+        f"{'==' + tv_ver if tv_ver else ''} for torch {torch_ver} (tags={tags or ['cpu']})…"
+    )
+
+    attempts: list[tuple[str, ...]] = []
+    if tv_ver:
+        for tag in tags:
+            attempts.append(
+                (
+                    "--force-reinstall",
+                    "--no-deps",
+                    "--no-cache-dir",
+                    f"torchvision=={tv_ver}",
+                    "--index-url",
+                    f"https://download.pytorch.org/whl/{tag}",
+                )
+            )
+        attempts.append(
+            ("--force-reinstall", "--no-deps", "--no-cache-dir", f"torchvision=={tv_ver}")
+        )
+
+    for args in attempts:
+        try:
+            _pip(*args)
+        except Exception as exc:
+            print(f"  torchvision install attempt failed: {exc}")
+            continue
+        # Safe: torchvision not imported in this process (checked above).
+        _purge_modules("torchvision")
+        ok2, err2 = _run_probe(_torchvision_probe_code())
+        if ok2:
+            print("  torchvision OK")
+            return
+        print(f"  still broken: {err2[-200:]}")
+
+    raise ImportError(
+        "torchvision still incompatible with torch after reinstall "
+        f"(torch={torch_ver}, cuda={cuda_ver or 'none'}). "
+        "Restart the Kaggle session and re-run with install enabled."
+    )
+
+
+def _numpy_abi_probe_code() -> str:
+    """Import numpy + common C extensions; fail only on real ABI mismatch."""
+    return (
+        "import numpy as np\n"
+        "print(np.__version__)\n"
+        "for mod in (\n"
+        "    'pandas._libs.tslibs.np_datetime',\n"
+        "    'scipy.special._ufuncs',\n"
+        "):\n"
+        "    try:\n"
+        "        __import__(mod)\n"
+        "    except ModuleNotFoundError:\n"
+        "        pass\n"
+        "    except Exception as exc:\n"
+        "        msg = str(exc)\n"
+        "        if 'dtype size changed' in msg or 'binary incompatibility' in msg:\n"
+        "            raise\n"
+    )
+
+
+def ensure_numpy_abi() -> None:
+    """Fix 'numpy.dtype size changed' before importing transformers / chatterbox.
+
+    Align pandas/scipy/pyarrow to the *installed* NumPy (usually 2.x on Kaggle).
+    Do not force-downgrade to 1.26.x — that fights modern wheels and leaves the
+    shared env on 2.x after the next pandas reinstall (AssertionError: 2.5.1).
+
+    Must run BEFORE this process imports torch/numpy.
+    """
+    probe = _numpy_abi_probe_code()
+    ok, _err = _run_probe(probe)
+    if ok:
+        return
+
+    if _native_ext_already_imported():
+        _refuse_native_reinstall("numpy", "numpy", "torch", "torchvision")
+
+    ver_ok, ver_out = _run_probe("import numpy as np; print(np.__version__)")
+    current = (ver_out or "").strip().splitlines()[-1] if ver_ok else "unknown"
+    print(f"Repairing NumPy ABI — reinstalling binary deps against numpy {current}…")
+    for pkg in _NUMPY_ABI_PKGS:
+        if importlib.util.find_spec(pkg) is None:
+            continue
+        try:
+            print(f"  reinstalling {pkg}…")
+            _pip("--force-reinstall", "--no-cache-dir", pkg)
+        except Exception as exc:
+            print(f"  optional {pkg} reinstall failed: {exc}")
+    _purge_modules("numpy", "pandas", "scipy", "pyarrow")
+    ok2, err2 = _run_probe(probe)
+    if not ok2:
+        raise ImportError(f"NumPy ABI still broken after reinstall:\n{err2}")
+    print(f"  NumPy ABI OK (numpy {current})")
+
+
+def ensure_transformers_pin(requirement: str) -> None:
+    """Pin transformers in this worker before the first import."""
+    if requirement.startswith(">="):
+        min_ver = requirement[2:]
+        pkg = f"transformers>={min_ver}"
+        check = (
+            "import transformers, sys\n"
+            "ver = transformers.__version__.split('+')[0].split('.')\n"
+            f"need = {[int(x) for x in min_ver.split('.')]!r}\n"
+            "cur = [int(x) for x in ver[:3]]\n"
+            "sys.exit(0 if cur >= need else 1)\n"
+        )
+    else:
+        pkg = f"transformers=={requirement}"
+        check = (
+            "import transformers, sys\n"
+            f"sys.exit(0 if transformers.__version__.startswith({requirement!r}) else 1)\n"
+        )
+
+    ok, _ = _run_probe(check)
+    if ok:
+        return
+
+    print(f"Pinning {pkg} for this worker…")
+    _pip(pkg)
+    _purge_modules("transformers")
+    ok2, err2 = _run_probe(check)
+    if not ok2:
+        print(f"WARNING: transformers pin check inconclusive:\n{err2}")
+
+
 def ensure_onnxruntime_cpu() -> None:
-    """Kaggle ships onnxruntime-gpu linked against libcudart.so.13 (CUDA 13),
-    which is absent on T4 images (CUDA 12.x). Swap in the CPU wheel."""
+    """Swap broken CUDA-13 onnxruntime-gpu for a CPU wheel on Kaggle T4.
+
+    catt_tashkeel / silma deps often reinstall onnxruntime-gpu (needs
+    libcudart.so.13, missing on Kaggle CUDA 12.x). Always verify import works.
+    """
     if _import_works("onnxruntime"):
         return
     print("onnxruntime broken (libcudart.so.13) — reinstalling CPU wheel…")
@@ -422,14 +844,55 @@ def ensure_onnxruntime_cpu() -> None:
     try:
         _pip("--no-cache-dir", "onnxruntime==1.20.1")
     except Exception:
-        _pip("--no-cache-dir", "onnxruntime")
+        try:
+            _pip("--no-cache-dir", "onnxruntime==1.19.2")
+        except Exception:
+            _pip("--no-cache-dir", "onnxruntime")
+    _purge_modules("onnxruntime")
+    if not _import_works("onnxruntime"):
+        subprocess.run(
+            [sys.executable, "-m", "pip", "uninstall", "-y", "-q", "onnxruntime", "onnxruntime-gpu"],
+            capture_output=True,
+        )
+        _pip("--no-cache-dir", "--force-reinstall", "onnxruntime==1.19.2")
+        _purge_modules("onnxruntime")
     if not _import_works("onnxruntime"):
         raise ImportError("onnxruntime still broken after CPU wheel reinstall")
 
 
+def ensure_torchcodec_optional() -> None:
+    """Drop broken torchcodec wheels.
+
+    SILMA declares torchcodec but does not import it (WAV I/O uses soundfile).
+    Recent CUDA wheels need libcudart.so.13 which Kaggle T4 images lack.
+    """
+    if _import_works("torchcodec"):
+        return
+    print("torchcodec broken — trying CPU wheel, else uninstalling (unused by SILMA)…")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchcodec"],
+        capture_output=True,
+    )
+    for args in (
+        ("--no-cache-dir", "--index-url", "https://download.pytorch.org/whl/cpu", "torchcodec"),
+        ("--no-cache-dir", "torchcodec==0.9.1"),
+    ):
+        try:
+            _pip(*args)
+            if _import_works("torchcodec"):
+                print("  torchcodec CPU wheel OK")
+                return
+        except Exception as exc:
+            print(f"  torchcodec install attempt failed: {exc}")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchcodec"],
+        capture_output=True,
+    )
+    print("  torchcodec removed; continuing without it")
+
+
 def ensure_pynini() -> None:
-    """SILMA → NeMo text normalization needs pynini; the preinstalled wheel's
-    bundled OpenFst .so can be corrupted ('cannot read file data')."""
+    """SILMA → NeMo text normalization needs a working pynini wheel."""
     if _import_works("pynini"):
         return
     print("pynini broken — force reinstalling…")
@@ -442,42 +905,175 @@ def ensure_pynini() -> None:
 
 
 def ensure_chatterbox() -> None:
+    """Install chatterbox WITHOUT deps — its metadata pins torch==2.6.0."""
     if importlib.util.find_spec("chatterbox") is not None:
         return
-    try:
-        ensure_module("chatterbox", "chatterbox-tts")
-    except Exception:
-        _pip("--no-deps", "chatterbox-tts")
-        _pip(
-            "resemble-perth",
-            "s3tokenizer",
-            "conformer==0.3.2",
-            "diffusers==0.29.0",
-            "safetensors>=0.5.3",
-            "pykakasi==2.3.0",
-            "spacy-pkuseg",
-            "pyloudnorm",
-            "omegaconf",
-            "librosa==0.11.0",
-        )
+    print("Installing chatterbox-tts (--no-deps; keep Kaggle torch)…")
+    _pip("--no-deps", "chatterbox-tts")
+    _pip(
+        "resemble-perth",
+        "s3tokenizer",
+        "conformer==0.3.2",
+        "diffusers==0.29.0",
+        "safetensors>=0.5.3",
+        "pykakasi==2.3.0",
+        "spacy-pkuseg",
+        "pyloudnorm",
+        "omegaconf",
+        "librosa==0.11.0",
+    )
     if importlib.util.find_spec("chatterbox") is None:
         raise ModuleNotFoundError(
             "No module named 'chatterbox'. Restart Kaggle, run install_packages(), then main()."
         )
 
 
+def ensure_chatterbox_stack() -> None:
+    """NumPy ABI + torchvision + transformers pin + chatterbox for NAMAA / V3.
+
+    Native-extension repairs should run in worker preflight (before torch import).
+    If LlamaModel still fails with torchvision::nms, repair torchvision on disk
+    even when torch is already loaded — subprocess probes see the new wheel, and
+    this process can still import torchvision for the first time afterward.
+    """
+    if "numpy" not in sys.modules:
+        ensure_numpy_abi()
+    ensure_torchvision_match()
+    ensure_transformers_pin(CHATTERBOX_TRANSFORMERS)
+    ensure_chatterbox()
+    probe = "import torchvision; import torchvision.ops; from transformers import LlamaModel"
+    ok, err = _run_probe(probe)
+    if ok:
+        return
+
+    err_l = (err or "").lower()
+    if "torchvision" in err_l or "nms" in err_l:
+        print("LlamaModel import failed due to torchvision — repairing matched wheel…")
+        if "torchvision" in sys.modules:
+            raise ImportError(
+                "torchvision already imported in this worker; cannot repair nms mismatch.\n"
+                f"{err}"
+            )
+        _purge_modules("torchvision")
+        # Force reinstall even if a stale probe previously returned OK.
+        torch_ver, cuda_ver = _torch_version_info()
+        mm = ".".join(torch_ver.split("+")[0].split(".")[:2]) if torch_ver else ""
+        tv_ver = _TORCH_TO_VISION.get(mm)
+        if not tv_ver:
+            raise ImportError(f"No torchvision mapping for torch {torch_ver}:\n{err}")
+        repaired = False
+        for tag in _cuda_wheel_tags(cuda_ver):
+            try:
+                _pip(
+                    "--force-reinstall",
+                    "--no-deps",
+                    "--no-cache-dir",
+                    f"torchvision=={tv_ver}",
+                    "--index-url",
+                    f"https://download.pytorch.org/whl/{tag}",
+                )
+            except Exception as exc:
+                print(f"  torchvision {tag} attempt failed: {exc}")
+                continue
+            _purge_modules("torchvision")
+            if _run_probe(_torchvision_probe_code())[0]:
+                repaired = True
+                print(f"  torchvision OK via {tag}")
+                break
+        if not repaired:
+            _pip("--force-reinstall", "--no-deps", "--no-cache-dir", f"torchvision=={tv_ver}")
+            _purge_modules("torchvision")
+    else:
+        print("LlamaModel import failed — re-pinning transformers only…")
+        _pip(f"transformers=={CHATTERBOX_TRANSFORMERS}")
+
+    _purge_modules("transformers", "chatterbox", "torchvision")
+    ok2, err2 = _run_probe(probe)
+    if not ok2:
+        raise ImportError(f"Could not import LlamaModel (chatterbox T3 backbone):\n{err2 or err}")
+
+
+def ensure_silma_deps() -> None:
+    """Install SILMA runtime deps that --no-deps silma-tts does not pull in."""
+    # Install tashkeel stack without deps so pip cannot reintroduce onnxruntime-gpu.
+    for module_name, package in _SILMA_RUNTIME_DEPS:
+        if module_name in ("catt_tashkeel", "nemo_text_processing"):
+            ensure_module(module_name, package, no_deps=True)
+        else:
+            ensure_module(module_name, package)
+    ensure_module("silma_tts", "silma-tts", no_deps=True)
+    ensure_module("cached_path", "cached-path")
+    ensure_module("hydra", "hydra-core>=1.3.0")
+    # catt_tashkeel imports onnxruntime at module load — repair AFTER its install.
+    ensure_onnxruntime_cpu()
+
+    # Probe the real import path; auto-fix missing modules or broken onnxruntime.
+    known = {name: pkg for name, pkg in _SILMA_RUNTIME_DEPS}
+    known.update({"hydra": "hydra-core>=1.3.0", "cached_path": "cached-path", "omegaconf": "omegaconf"})
+    for _ in range(8):
+        ok, err = _run_probe("import silma_tts; from silma_tts.api import SilmaTTS")
+        if ok:
+            return
+        err_l = (err or "").lower()
+        if "libcudart" in err_l or "onnxruntime" in err_l:
+            print("SILMA import hit broken onnxruntime — forcing CPU wheel…")
+            subprocess.run(
+                [sys.executable, "-m", "pip", "uninstall", "-y", "-q", "onnxruntime", "onnxruntime-gpu"],
+                capture_output=True,
+            )
+            _purge_modules("onnxruntime", "catt_tashkeel", "silma_tts")
+            ensure_onnxruntime_cpu()
+            continue
+        missing = None
+        for line in (err or "").splitlines():
+            if "No module named" in line:
+                part = line.split("No module named", 1)[-1].strip().strip("'\"")
+                missing = part.split(".")[0].strip().strip("'\"")
+                break
+        if not missing:
+            raise ImportError(f"silma_tts import failed:\n{err}")
+        pkg = known.get(missing, missing.replace("_", "-"))
+        print(f"SILMA missing dependency {missing!r} — installing {pkg}…")
+        if missing in ("catt_tashkeel", "nemo_text_processing", "silma_tts"):
+            _pip("--no-deps", pkg)
+        else:
+            _pip(pkg)
+        _purge_modules(missing, "silma_tts")
+        ensure_onnxruntime_cpu()
+    raise ImportError("silma_tts still failing after installing missing deps")
+
+
 def ensure_transformers_for_voicetut() -> None:
     """omnivoice needs HiggsAudioV2TokenizerModel (transformers>=5.3)."""
+    if "numpy" not in sys.modules:
+        ensure_numpy_abi()
+    ensure_torchvision_match()
     ensure_module("voicetut_tts", "omnivoice", "voicetut-tts")
-    try:
-        from transformers import HiggsAudioV2TokenizerModel  # noqa: F401
+    ensure_transformers_pin(VOICETUT_TRANSFORMERS)
+    ok, err = _run_probe(
+        "import torchvision; import torchvision.ops; "
+        "from transformers import HiggsAudioV2TokenizerModel"
+    )
+    if not ok:
+        err_l = (err or "").lower()
+        if "torchvision" in err_l or "nms" in err_l:
+            print("VoiceTut import failed due to torchvision — repairing…")
+            _purge_modules("torchvision")
+            ensure_torchvision_match()
+        else:
+            print("Upgrading transformers>=5.3.0 for VoiceTut…")
+            _pip("-U", "transformers>=5.3.0")
+        _purge_modules("transformers", "torchvision")
+        ok2, err2 = _run_probe(
+            "import torchvision; import torchvision.ops; "
+            "from transformers import HiggsAudioV2TokenizerModel"
+        )
+        if not ok2:
+            raise ImportError(
+                "HiggsAudioV2TokenizerModel still missing after transformers>=5.3.0.\n"
+                f"{err2 or err}"
+            )
 
-        return
-    except Exception:
-        pass
-    print("Upgrading transformers>=5.3.0 for VoiceTut…")
-    _pip("-U", "transformers>=5.3.0")
-    from transformers import HiggsAudioV2TokenizerModel  # noqa: F401
 
 
 def pick_ref_audio() -> Optional[Path]:
@@ -760,7 +1356,7 @@ def synth_voicetut(text: str, out_path: Path) -> dict[str, Any]:
 
 
 def synth_namaa(text: str, out_path: Path) -> dict[str, Any]:
-    ensure_chatterbox()
+    ensure_chatterbox_stack()
     import torch
     from chatterbox import mtl_tts
     from huggingface_hub import snapshot_download
@@ -798,7 +1394,7 @@ def synth_namaa(text: str, out_path: Path) -> dict[str, Any]:
 
 
 def synth_chatterbox_v3(text: str, out_path: Path) -> dict[str, Any]:
-    ensure_chatterbox()
+    ensure_chatterbox_stack()
     import torch
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
@@ -827,12 +1423,6 @@ def synth_chatterbox_v3(text: str, out_path: Path) -> dict[str, Any]:
         save_wav(out_path, wav, model.sr)
     gen_s = time.perf_counter() - t1
     return {"load_seconds": load_s, "generation_seconds": gen_s, "note": f"{note}; chunks={len(chunks)}"}
-
-
-def _purge_modules(*prefixes: str) -> None:
-    for name in list(sys.modules):
-        if any(name == p or name.startswith(p + ".") for p in prefixes):
-            del sys.modules[name]
 
 
 def _patch_qwen_tts_decorator() -> None:
@@ -978,7 +1568,13 @@ def synth_kokoro(text: str, out_path: Path) -> dict[str, Any]:
 
 
 def synth_silma(text: str, out_path: Path, ref_audio: Optional[Path] = None) -> dict[str, Any]:
-    ensure_module("silma_tts", "silma-tts")
+    # Native repairs belong in worker preflight; only verify here if already imported.
+    if "numpy" not in sys.modules:
+        ensure_numpy_abi()
+    ensure_torchvision_match()
+    ensure_torchcodec_optional()
+    ensure_silma_deps()  # installs catt_tashkeel --no-deps, then repairs onnxruntime
+    ensure_onnxruntime_cpu()
     ensure_pynini()  # NeMo text normalization dies on Kaggle's corrupted pynini .so
     import numpy as np
     import soundfile as sf
@@ -1282,6 +1878,31 @@ RUNNERS = {
 # ===========================================================================
 
 def worker_main(model_name: str, text_file: Path, out_path: Path, ref_audio: Optional[Path], meta_path: Path) -> int:
+    # Repair shared Kaggle env BEFORE importing torch/numpy/transformers.
+    # Native extensions cannot be force-reinstalled after first import in this process.
+    try:
+        ensure_numpy_abi()
+        ensure_torchvision_match()
+        if model_name in ("NAMAA-Egyptian-TTS", "Chatterbox-Multilingual-V3"):
+            ensure_transformers_pin(CHATTERBOX_TRANSFORMERS)
+        elif model_name == "VoiceTut-TTS":
+            ensure_transformers_pin(VOICETUT_TRANSFORMERS)
+        elif model_name == "SILMA-TTS":
+            ensure_torchcodec_optional()
+            ensure_silma_deps()  # ends with ensure_onnxruntime_cpu() after catt_tashkeel
+            ensure_pynini()
+            ensure_onnxruntime_cpu()  # final guard against libcudart.so.13
+    except Exception as exc:
+        payload = {
+            "status": "error",
+            "error": f"{type(exc).__name__}: {exc}",
+            "traceback": traceback.format_exc()[-4000:],
+        }
+        write_meta(meta_path, payload)
+        print(f"[worker] FAIL {model_name} (preflight): {payload['error']}")
+        traceback.print_exc()
+        return 1
+
     text = text_file.read_text(encoding="utf-8")
     print(f"[worker] model={model_name} cuda_visible={os.environ.get('CUDA_VISIBLE_DEVICES')} gpus={gpu_count()}")
     for mod, pkg in (("psutil", "psutil"), ("pynvml", "nvidia-ml-py")):
