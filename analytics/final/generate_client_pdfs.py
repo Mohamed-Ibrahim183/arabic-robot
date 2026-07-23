@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import json
 import textwrap
+from datetime import date
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -21,6 +22,16 @@ from matplotlib import font_manager
 
 ROOT = Path(__file__).resolve().parent
 OUT_DIR = ROOT / "client_pdfs"
+REPORT_DATE = date.today().strftime("%d %B %Y")
+DOC_MARK = "Client deliverable  ·  Model selection bake-off"
+T4_VRAM_MB = 14913.0
+# Shared example prompt IDs (diverse categories) for LLM sample pages
+LLM_EXAMPLE_PROMPT_IDS = ["A001", "A002", "C001", "D002", "E001"]
+PROMPTS_CANDIDATES = [
+    ROOT.parents[1] / "kaggle_working" / "llm_inputs" / "prompts.json",
+    ROOT.parent.parent / "kaggle_working" / "llm_inputs" / "prompts.json",
+    Path.cwd() / "kaggle_working" / "llm_inputs" / "prompts.json",
+]
 
 C_BLUE = "#2b6cb0"
 C_GREEN = "#2f855a"
@@ -75,8 +86,13 @@ def read_json(path: Path) -> dict:
 
 
 def fnum(row: dict, key: str, default: float | None = None) -> float | None:
-    raw = (row.get(key) or "").strip()
-    if raw == "" or raw is None:
+    raw = row.get(key)
+    if raw is None:
+        return default
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    raw = str(raw).strip()
+    if raw == "":
         return default
     try:
         return float(raw)
@@ -112,14 +128,40 @@ def short(model: str) -> str:
 
 def footer(fig: plt.Figure, page: int, total: int, family: str) -> None:
     fig.text(
+        0.06,
+        0.012,
+        f"{REPORT_DATE}",
+        ha="left",
+        va="bottom",
+        fontsize=7.5,
+        color=C_GRAY,
+    )
+    fig.text(
         0.5,
-        0.01,
+        0.012,
         f"Arabic Voice Robot  ·  {family}  ·  {page}/{total}",
         ha="center",
         va="bottom",
         fontsize=8,
         color=C_GRAY,
     )
+    fig.text(
+        0.94,
+        0.012,
+        "Confidential",
+        ha="right",
+        va="bottom",
+        fontsize=7.5,
+        color=C_GRAY,
+    )
+
+
+def header_bar(fig: plt.Figure, family: str) -> None:
+    fig.add_artist(
+        plt.Rectangle((0, 0.975), 1, 0.025, transform=fig.transFigure, facecolor=C_NAVY, clip_on=False)
+    )
+    fig.text(0.06, 0.987, DOC_MARK, ha="left", va="center", fontsize=7.5, color="white")
+    fig.text(0.94, 0.987, family.upper(), ha="right", va="center", fontsize=7.5, color="white", fontweight="bold")
 
 
 def bar_labels(ax, bars, fmt: str = "{:.1f}", offset: float = 0.5) -> None:
@@ -182,23 +224,31 @@ def cover(
     how_to_read: list[str],
     family: str,
     total: int,
+    verdict: str | None = None,
 ) -> None:
     fig = plt.figure(figsize=(11, 8.5))
-    fig.suptitle(title, fontsize=18, fontweight="bold", color=C_NAVY, y=0.955)
-    fig.text(0.5, 0.905, subtitle, ha="center", fontsize=10.5, color=C_GRAY)
+    header_bar(fig, family)
+    fig.suptitle(title, fontsize=18, fontweight="bold", color=C_NAVY, y=0.945)
+    fig.text(0.5, 0.900, subtitle, ha="center", fontsize=10.5, color=C_GRAY)
+    fig.text(0.5, 0.872, f"Prepared {REPORT_DATE}  ·  Egyptian Arabic voice robot stack", ha="center", fontsize=8.5, color=C_TEAL)
 
     for i, (label, value) in enumerate(callouts[:4]):
         x = 0.07 + (i % 4) * 0.23
-        ax = fig.add_axes([x, 0.76, 0.21, 0.10])
+        ax = fig.add_axes([x, 0.745, 0.21, 0.095])
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
         ax.axis("off")
         ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=C_SOFT, edgecolor=C_LINE, linewidth=1, transform=ax.transAxes))
         ax.text(0.06, 0.68, label, fontsize=7.5, color=C_GRAY, transform=ax.transAxes)
-        ax.text(0.06, 0.22, value, fontsize=9.5, fontweight="bold", color=C_NAVY, transform=ax.transAxes)
+        ax.text(0.06, 0.22, value, fontsize=9.2, fontweight="bold", color=C_NAVY, transform=ax.transAxes)
 
-    draw_text_block(fig, 0.07, 0.38, 0.86, 0.34, "Overview", overview)
-    draw_text_block(fig, 0.07, 0.08, 0.86, 0.26, "How to read this report", how_to_read)
+    if verdict:
+        draw_text_block(fig, 0.07, 0.62, 0.86, 0.10, "Executive verdict", [verdict], title_color=C_GREEN)
+        draw_text_block(fig, 0.07, 0.30, 0.86, 0.29, "Overview", overview)
+        draw_text_block(fig, 0.07, 0.07, 0.86, 0.20, "How to read this report", how_to_read)
+    else:
+        draw_text_block(fig, 0.07, 0.38, 0.86, 0.34, "Overview", overview)
+        draw_text_block(fig, 0.07, 0.08, 0.86, 0.26, "How to read this report", how_to_read)
 
     footer(fig, 1, total, family)
     pdf.savefig(fig)
@@ -216,24 +266,223 @@ def recommendations_page(
 ) -> None:
     """picks: (label, model, why, metrics_line)"""
     fig = plt.figure(figsize=(11, 8.5))
-    fig.suptitle(title, fontsize=15, fontweight="bold", color=C_NAVY, y=0.96)
+    header_bar(fig, family)
+    fig.suptitle(title, fontsize=15, fontweight="bold", color=C_NAVY, y=0.95)
 
-    y = 0.86
+    n = max(len(picks), 1)
+    notes_h = 0.16
+    top = 0.86
+    bottom = 0.08 + notes_h + 0.02
+    available = top - bottom
+    card_h = min(0.11, available / n - 0.012)
+    gap = (available - n * card_h) / max(n, 1)
+    y = top
     for label, model, why, metrics in picks:
-        ax = fig.add_axes([0.07, y - 0.11, 0.86, 0.11])
+        ax = fig.add_axes([0.07, y - card_h, 0.86, card_h])
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
         ax.axis("off")
         ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=C_LINE, linewidth=1, transform=ax.transAxes))
         ax.add_patch(plt.Rectangle((0, 0), 0.012, 1, facecolor=C_BLUE, transform=ax.transAxes, clip_on=False))
-        ax.text(0.04, 0.72, label, fontsize=8, color=C_GRAY, transform=ax.transAxes)
-        ax.text(0.04, 0.38, model, fontsize=12, fontweight="bold", color=C_NAVY, transform=ax.transAxes)
-        ax.text(0.38, 0.55, why, fontsize=8.2, color="#2d3748", transform=ax.transAxes, wrap=True)
-        ax.text(0.38, 0.18, metrics, fontsize=7.5, color=C_TEAL, transform=ax.transAxes)
-        y -= 0.125
+        ax.text(0.04, 0.72, label, fontsize=7.8, color=C_GRAY, transform=ax.transAxes)
+        ax.text(0.04, 0.32, model, fontsize=11, fontweight="bold", color=C_NAVY, transform=ax.transAxes)
+        why_wrapped = "\n".join(textwrap.wrap(why, width=78)) if why else ""
+        ax.text(0.38, 0.55, why_wrapped, fontsize=7.8, color="#2d3748", transform=ax.transAxes, va="center")
+        ax.text(0.38, 0.14, metrics, fontsize=7.2, color=C_TEAL, transform=ax.transAxes)
+        y -= card_h + gap
 
-    draw_text_block(fig, 0.07, 0.06, 0.86, 0.18, "Selection notes", notes, title_color=C_AMBER)
+    draw_text_block(fig, 0.07, 0.05, 0.86, notes_h, "Selection notes", notes, title_color=C_AMBER)
     footer(fig, page, total, family)
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def methodology_page(
+    pdf: PdfPages,
+    family: str,
+    page: int,
+    total: int,
+    scope_lines: list[str],
+    method_lines: list[str],
+    limit_lines: list[str],
+) -> None:
+    fig = plt.figure(figsize=(11, 8.5))
+    header_bar(fig, family)
+    fig.suptitle(f"{family} — Evaluation methodology & scope", fontsize=15, fontweight="bold", color=C_NAVY, y=0.95)
+    draw_text_block(fig, 0.07, 0.62, 0.86, 0.26, "What was evaluated", scope_lines)
+    draw_text_block(fig, 0.07, 0.33, 0.86, 0.26, "How scores were produced", method_lines)
+    draw_text_block(fig, 0.07, 0.06, 0.86, 0.24, "Limitations (read before sign-off)", limit_lines, title_color=C_AMBER)
+    footer(fig, page, total, family)
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def table_page(
+    pdf: PdfPages,
+    title: str,
+    headers: list[str],
+    rows: list[list[str]],
+    caption: list[str],
+    family: str,
+    page: int,
+    total: int,
+) -> None:
+    fig = plt.figure(figsize=(11, 8.5))
+    header_bar(fig, family)
+    fig.suptitle(title, fontsize=15, fontweight="bold", color=C_NAVY, y=0.95)
+
+    ax = fig.add_axes([0.05, 0.28, 0.90, 0.60])
+    ax.axis("off")
+    table = ax.table(
+        cellText=rows,
+        colLabels=headers,
+        loc="upper center",
+        cellLoc="center",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(7.4)
+    table.scale(1, 1.35)
+    for (r, c), cell in table.get_celld().items():
+        cell.set_edgecolor(C_LINE)
+        if r == 0:
+            cell.set_facecolor(C_NAVY)
+            cell.set_text_props(color="white", fontweight="bold", fontsize=7.6)
+        elif r % 2 == 0:
+            cell.set_facecolor("#f7fafc")
+        else:
+            cell.set_facecolor("white")
+        if c == 0 and r > 0:
+            cell.set_text_props(ha="left", fontweight="bold")
+
+    draw_text_block(fig, 0.07, 0.05, 0.86, 0.20, "Reading the table", caption)
+    footer(fig, page, total, family)
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def fmt_metric(v: float | None, digits: int = 1) -> str:
+    if v is None:
+        return "—"
+    if digits == 0:
+        return f"{v:.0f}"
+    return f"{v:.{digits}f}"
+
+
+def ar_display(text: str) -> str:
+    """Shape Arabic for correct visual order in matplotlib."""
+    if not text:
+        return ""
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+
+        return get_display(arabic_reshaper.reshape(text))
+    except Exception:
+        return text
+
+
+def clip_text(text: str, max_chars: int = 220) -> str:
+    text = (text or "").replace("\n", " ").strip()
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 1].rstrip() + "…"
+
+
+def load_prompt_lookup() -> dict[str, dict]:
+    for path in PROMPTS_CANDIDATES:
+        if path.exists():
+            data = read_json(path)
+            prompts = data.get("prompts") if isinstance(data, dict) else data
+            if isinstance(prompts, list):
+                return {p.get("id"): p for p in prompts if p.get("id")}
+    return {}
+
+
+def load_llm_examples(model: str, prompt_ids: list[str], prompt_lookup: dict[str, dict]) -> list[dict]:
+    """Load prompt + response + score for selected prompt IDs."""
+    resp_dir = ROOT / "llm_outputs" / "responses" / model
+    examples = []
+    for pid in prompt_ids:
+        eval_path = resp_dir / f"{pid}.eval.json"
+        txt_path = resp_dir / f"{pid}.txt"
+        if not eval_path.exists() and not txt_path.exists():
+            continue
+        ev = read_json(eval_path) if eval_path.exists() else {}
+        response = (ev.get("response_text") or "").strip()
+        if not response and txt_path.exists():
+            response = txt_path.read_text(encoding="utf-8").strip()
+        prompt = prompt_lookup.get(pid) or {}
+        user = (prompt.get("user") or "").strip()
+        if not user:
+            turns = prompt.get("turns") or []
+            user_turns = [t.get("content", "") for t in turns if t.get("role") == "user"]
+            user = user_turns[-1] if user_turns else ""
+        examples.append(
+            {
+                "prompt_id": pid,
+                "category": ev.get("category") or prompt.get("category") or "—",
+                "user": user or f"(prompt {pid})",
+                "response": response or "(no response)",
+                "overall": fnum(ev, "overall_score"),
+                "auto_pass": bool(ev.get("auto_pass")),
+                "failures": ", ".join(ev.get("auto_failures") or [])[:90],
+            }
+        )
+    return examples
+
+
+def llm_examples_page(
+    pdf: PdfPages,
+    model: str,
+    examples: list[dict],
+    page: int,
+    total: int,
+) -> None:
+    """One page: 5 sample prompt/response pairs for a model."""
+    fig = plt.figure(figsize=(11, 8.5))
+    header_bar(fig, "LLM")
+    fig.suptitle(f"Sample outputs — {model}", fontsize=15, fontweight="bold", color=C_NAVY, y=0.945)
+    fig.text(
+        0.5,
+        0.905,
+        "Same 5 prompts across models · Arabic responses shown with shaping · scores from bake-off rubric",
+        ha="center",
+        fontsize=8.5,
+        color=C_GRAY,
+    )
+
+    n = max(len(examples), 1)
+    top = 0.86
+    bottom = 0.05
+    card_h = min(0.145, (top - bottom) / n - 0.01)
+    y = top
+    for ex in examples:
+        ax = fig.add_axes([0.06, y - card_h, 0.88, card_h])
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.axis("off")
+        passed = ex.get("auto_pass")
+        edge = C_GREEN if passed else C_AMBER
+        ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=C_LINE, linewidth=0.9, transform=ax.transAxes))
+        ax.add_patch(plt.Rectangle((0, 0), 0.01, 1, facecolor=edge, transform=ax.transAxes, clip_on=False))
+
+        score = ex.get("overall")
+        score_txt = f"{score:.2f}/5" if score is not None else "—/5"
+        status = "PASS" if passed else "FAIL"
+        meta = f"{ex['prompt_id']}  ·  {ex['category']}  ·  {status}  ·  {score_txt}"
+        ax.text(0.025, 0.82, meta, fontsize=7.4, color=C_GRAY, transform=ax.transAxes, fontweight="bold")
+
+        user_line = clip_text(ex.get("user", ""), 150)
+        resp_line = clip_text(ex.get("response", ""), 260)
+        ax.text(0.025, 0.55, "Prompt", fontsize=7.2, color=C_TEAL, transform=ax.transAxes, fontweight="bold")
+        ax.text(0.10, 0.55, ar_display(user_line), fontsize=8.0, color=C_NAVY, transform=ax.transAxes, ha="left", va="center")
+        ax.text(0.025, 0.22, "Reply", fontsize=7.2, color=C_TEAL, transform=ax.transAxes, fontweight="bold")
+        ax.text(0.10, 0.22, ar_display(resp_line), fontsize=7.8, color="#2d3748", transform=ax.transAxes, ha="left", va="center")
+        if ex.get("failures") and not passed:
+            ax.text(0.72, 0.82, clip_text(ex["failures"], 55), fontsize=6.5, color=C_AMBER, transform=ax.transAxes, ha="left")
+        y -= card_h + 0.012
+
+    footer(fig, page, total, "LLM")
     pdf.savefig(fig)
     plt.close(fig)
 
@@ -392,10 +641,11 @@ def glossary_page(
 ) -> None:
     """Full-page glossary: what each metric means + whether lower/higher is better."""
     fig = plt.figure(figsize=(11, 8.5))
-    fig.suptitle(f"{family} - Metrics glossary (what to prefer)", fontsize=15, fontweight="bold", color=C_NAVY, y=0.965)
+    header_bar(fig, family)
+    fig.suptitle(f"{family} - Metrics glossary (what to prefer)", fontsize=15, fontweight="bold", color=C_NAVY, y=0.95)
     fig.text(
         0.5,
-        0.925,
+        0.910,
         "Use this page while reading the charts. Direction labels show what you want for a production robot.",
         ha="center",
         fontsize=9,
@@ -407,7 +657,7 @@ def glossary_page(
     cols = [entries[:mid], entries[mid:]]
     for col_i, col in enumerate(cols):
         x0 = 0.05 + col_i * 0.48
-        y = 0.88
+        y = 0.86
         for term, direction, meaning in col:
             ax = fig.add_axes([x0, y - 0.095, 0.45, 0.09])
             ax.set_xlim(0, 1)
@@ -457,9 +707,12 @@ def build_llm_pdf() -> Path:
     picks = recs.get("picks") or {}
     best_q = max(by_model, key=lambda r: fnum(r, "avg_overall_score", 0) or 0) if by_model else {}
     gated = [r["model"] for r in all_models if not fnum(r, "ok", 0)]
+    speed_model = picks.get("best_for_robot_realtime", {}).get("model", "—")
+    speed_q = fnum(qmap.get(speed_model, {}), "avg_overall_score", 0) or 0
 
     out = OUT_DIR / "LLM_Model_Selection_Report.pdf"
-    total = 10
+    total = 16
+    prompt_lookup = load_prompt_lookup()
     with PdfPages(out) as pdf:
         cover(
             pdf,
@@ -481,21 +734,54 @@ def build_llm_pdf() -> Path:
                 "These two leaders may differ — choose based on whether turn-taking speed or answer quality is the priority.",
             ],
             [
-                "Page 2: metrics glossary — what every term means and whether LOWER or HIGHER is better.",
-                "Page 3: recommended picks with rationale.",
-                "Pages 4-6: latency, throughput, VRAM, and normalized score charts.",
-                "Pages 7-9: quality dimensions, category heatmaps, and score distributions.",
-                "Page 10: decision guidance for production selection.",
+                "Page 2: methodology, hardware context, and limitations.",
+                "Page 3: metrics glossary — LOWER vs HIGHER guidance.",
+                "Page 4: recommended picks with rationale.",
+                "Page 5: full leaderboard evidence table.",
+                "Pages 6-11: charts (latency, VRAM, quality, heatmaps).",
+                "Pages 12-15: sample outputs (5 prompts × each OK model).",
+                "Page 16: decision guidance and sign-off checklist.",
             ],
             "LLM",
             total,
+            verdict=(
+                f"Default for snappy turns: {speed_model}. "
+                f"Default for spoken answer quality: {best_q.get('model', '—')} ({fnum(best_q, 'avg_overall_score', 0):.2f}/5). "
+                "Practical middle ground: Qwen3-4B."
+            ),
+        )
+
+        methodology_page(
+            pdf,
+            "LLM",
+            2,
+            total,
+            [
+                f"Prompt suite: ~{len(scores) or 80} scored prompts across Egyptian Arabic, code-switch,",
+                "ASR-noise recovery, instruction following, multi-turn memory, structured output, and tool-calling.",
+                f"Models completed OK: {', '.join(short(m) for m in models) or '—'}.",
+                f"Not scored (gated / failed load): {', '.join(short(m) for m in gated) or 'none'}.",
+                "Hardware reference line on charts: NVIDIA T4 ≈ 14.9 GB VRAM (typical mid-tier host).",
+            ],
+            [
+                "Robot realtime score blends TTFT, tokens/s, VRAM efficiency, and cold-load time (HIGHER better).",
+                "Quality uses a fixed rubric: correctness, instruction following, conciseness, TTS fit (0–5).",
+                "Auto-pass rate counts prompts that clear automated checks (HIGHER better).",
+                "Latency charts report wall-clock TTFT and generation throughput from the bake-off runs.",
+            ],
+            [
+                "Dialect naturalness is not fully captured by the automated rubric — spot-check responses.",
+                "Thinking modes were disabled where possible; enabling them will raise TTFT.",
+                "Scores are relative within this bake-off set, not absolute industry benchmarks.",
+                "Re-validate on your production prompts, tools, and system prompt before freeze.",
+            ],
         )
 
         glossary_page(
             pdf,
             "LLM",
             LLM_METRICS,
-            2,
+            3,
             total,
             [
                 "For LLM robots: want LOWER TTFT, LOWER VRAM/RAM, LOWER load time;",
@@ -528,13 +814,46 @@ def build_llm_pdf() -> Path:
                 "Disable thinking modes where available to reduce TTFT further.",
             ],
             "LLM",
-            3,
+            4,
             total,
         )
 
-        # P3 — Robot vs Quality + text panel
+        lb_headers = ["Rank", "Model", "Robot", "TTFT s", "Tok/s", "VRAM MB", "Quality/5", "Pass %"]
+        lb_rows = []
+        for i, r in enumerate(lb, start=1):
+            q = qmap.get(r["model"], {})
+            lb_rows.append(
+                [
+                    str(i),
+                    short(r["model"]),
+                    fmt_metric(fnum(r, "score_robot_realtime"), 1),
+                    fmt_metric(fnum(r, "avg_first_token_seconds"), 3),
+                    fmt_metric(fnum(r, "avg_tokens_per_second"), 2),
+                    fmt_metric(fnum(r, "peak_vram_mb"), 0),
+                    fmt_metric(fnum(q, "avg_overall_score"), 2),
+                    fmt_metric(fnum(q, "auto_pass_rate_percent"), 0),
+                ]
+            )
+        table_page(
+            pdf,
+            "LLM leaderboard (primary evidence table)",
+            lb_headers,
+            lb_rows,
+            [
+                "Robot = composite for conversational robots (HIGHER better).",
+                "TTFT LOWER better; Tok/s and Quality/Pass % HIGHER better; VRAM LOWER better.",
+                f"Speed leader {speed_model} scores {speed_q:.2f}/5 on quality — verify verbosity before production.",
+                f"Quality leader {best_q.get('model', '—')} is slower on TTFT — acceptable if answers must stay correct/short.",
+            ],
+            "LLM",
+            5,
+            total,
+        )
+
+        # P6 — Robot vs Quality + text panel
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Robot realtime score  vs  Response quality", fontweight="bold", color=C_NAVY, y=0.97)
+        header_bar(fig, "LLM")
+        fig.suptitle("Robot realtime score  vs  Response quality", fontweight="bold", color=C_NAVY, y=0.95)
         ax0 = fig.add_axes([0.08, 0.42, 0.40, 0.48])
         ax1 = fig.add_axes([0.56, 0.42, 0.40, 0.48])
         robot = [fnum(r, "score_robot_realtime", 0) or 0 for r in lb]
@@ -571,14 +890,15 @@ def build_llm_pdf() -> Path:
                 "Prefer left leader for snappy turns; prefer right leader for better spoken answers.",
             ],
         )
-        footer(fig, 4, total, "LLM")
+        footer(fig, 6, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P5 — TTFT & throughput
+        # P7 — TTFT & throughput
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Latency & throughput", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "LLM")
+        fig.suptitle("Latency & throughput", fontweight="bold", color=C_NAVY, y=0.92)
         ttft = [fnum(r, "avg_first_token_seconds", 0) or 0 for r in lb]
         tps = [fnum(r, "avg_tokens_per_second", 0) or 0 for r in lb]
         bars = axes[0].bar(names, ttft, color=C_AMBER)
@@ -597,15 +917,16 @@ def build_llm_pdf() -> Path:
             "Throughput / tokens-per-second (HIGHER better): how quickly the rest of the answer is generated. "
             "Nile-Chat-4B and Qwen3-4B lead both; Qwen3-8B and ALLaM-7B are slower.",
         )
-        footer(fig, 5, total, "LLM")
+        footer(fig, 7, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P6 — scatter + VRAM
+        # P8 — scatter + VRAM
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Quality-speed tradeoff  &  VRAM", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "LLM")
+        fig.suptitle("Quality-speed tradeoff  &  VRAM", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         for i, r in enumerate(lb):
             q = qmap.get(r["model"], {})
             x = fnum(r, "avg_first_token_seconds", 0) or 0
@@ -620,7 +941,7 @@ def build_llm_pdf() -> Path:
 
         vram = [fnum(r, "peak_vram_mb", 0) or 0 for r in lb]
         bars = ax1.bar(names, vram, color=C_RED)
-        ax1.axhline(14913, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ~ 14.9 GB")
+        ax1.axhline(T4_VRAM_MB, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ~ 14.9 GB")
         ax1.set_ylabel("MB  |  LOWER better")
         ax1.set_title("Peak VRAM (LOWER better)")
         ax1.legend(fontsize=8)
@@ -643,14 +964,15 @@ def build_llm_pdf() -> Path:
                 "Leave GPU headroom if ASR + LLM + TTS must share one card.",
             ],
         )
-        footer(fig, 6, total, "LLM")
+        footer(fig, 8, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P7 score breakdown
+        # P9 score breakdown
         fig, ax = plt.subplots(figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Normalized score breakdown (all scores: HIGHER better)", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "LLM")
+        fig.suptitle("Normalized score breakdown (all scores: HIGHER better)", fontweight="bold", color=C_NAVY, y=0.92)
         metrics = [
             ("Latency", "score_latency"),
             ("Throughput", "score_throughput"),
@@ -675,15 +997,16 @@ def build_llm_pdf() -> Path:
             "Latency score rewards LOW TTFT; Throughput rewards HIGH tok/s; VRAM efficiency rewards LOW peak VRAM; "
             "Load rewards LOW cold-load time. Robot score blends them for conversational robots.",
         )
-        footer(fig, 7, total, "LLM")
+        footer(fig, 9, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P8 quality dimensions
+        # P10 quality dimensions
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Quality dimensions & auto-pass rate (HIGHER better)", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "LLM")
+        fig.suptitle("Quality dimensions & auto-pass rate (HIGHER better)", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         dims = [
             ("Overall", "avg_overall_score"),
             ("Correct", "avg_correctness_score"),
@@ -728,14 +1051,15 @@ def build_llm_pdf() -> Path:
                 "Language score was uniformly high for OK models — dialect capability is not the differentiator here.",
             ],
         )
-        footer(fig, 8, total, "LLM")
+        footer(fig, 10, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P9 heatmaps
+        # P11 heatmaps
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.20, top=0.88)
-        fig.suptitle("Category performance heatmaps", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.20, top=0.86)
+        header_bar(fig, "LLM")
+        fig.suptitle("Category performance heatmaps", fontweight="bold", color=C_NAVY, y=0.92)
         cats = sorted({r["category"] for r in by_cat if r.get("category") and r["category"] != "general"})
         ok_models = [r["model"] for r in by_model]
         ttft_m = np.full((len(ok_models), len(cats)), np.nan)
@@ -779,15 +1103,23 @@ def build_llm_pdf() -> Path:
             "Right heatmap: tokens/s (HIGHER better — darker green usually means faster generation). "
             "Tool-calling is the slowest category for all models.",
         )
-        footer(fig, 9, total, "LLM")
+        footer(fig, 11, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P10 decision page
+        # Pages 12-15: sample outputs (5 prompts per OK model, leaderboard order)
+        for i, model_name in enumerate(models):
+            examples = load_llm_examples(model_name, LLM_EXAMPLE_PROMPT_IDS, prompt_lookup)
+            if not examples:
+                continue
+            llm_examples_page(pdf, model_name, examples, 12 + i, total)
+
+        # P16 decision page
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Score distribution & decision guidance", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.42, 0.42, 0.48])
-        ax1 = fig.add_axes([0.58, 0.42, 0.34, 0.48])
+        header_bar(fig, "LLM")
+        fig.suptitle("Score distribution & decision guidance", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.42, 0.42, 0.46])
+        ax1 = fig.add_axes([0.58, 0.42, 0.34, 0.46])
         data_by, labels_box = [], []
         for m in models:
             vals = [fnum(r, "overall_score") for r in scores if r.get("model") == m and fnum(r, "overall_score") is not None]
@@ -817,17 +1149,17 @@ def build_llm_pdf() -> Path:
             0.06,
             0.86,
             0.30,
-            "How to choose",
+            "How to choose / sign-off checklist",
             [
                 f"1) Need fastest conversational feel (LOW TTFT) -> {speed_model}.",
                 f"2) Need best answer quality / auto-pass (HIGHER better) -> {best_q.get('model', '—')}.",
                 "3) Need a balance on a mid GPU -> Qwen3-4B (strong TTFT + solid quality).",
                 "4) Need lowest VRAM (LOWER better) for co-residency -> Qwen3-8B (int4).",
                 "5) Avoid ALLaM-7B on T4-class GPUs unless dialect needs outweigh HIGH VRAM cost.",
-                "6) Gated models (Gemma / Jais) were not scored — re-run after HF auth if required.",
+                "6) Review sample outputs (pages 12-15); confirm combined VRAM with ASR+TTS.",
             ],
         )
-        footer(fig, 10, total, "LLM")
+        footer(fig, 16, total, "LLM")
         pdf.savefig(fig)
         plt.close(fig)
 
@@ -848,7 +1180,7 @@ def build_asr_pdf() -> Path:
     names = [short(r["model"]) for r in lb]
 
     out = OUT_DIR / "ASR_Model_Selection_Report.pdf"
-    total = 9
+    total = 11
     with PdfPages(out) as pdf:
         cover(
             pdf,
@@ -869,21 +1201,52 @@ def build_asr_pdf() -> Path:
                 f"Top accuracy pick: {picks.get('best_accuracy', {}).get('model', '—')}.",
             ],
             [
-                "Page 2: metrics glossary — RTF, WER, CER, VRAM, and what to prefer.",
-                "Page 3: recommended picks with rationale.",
-                "Pages 4-6: accuracy, speed, WER, and accuracy-RTF tradeoff charts.",
-                "Pages 7-8: VRAM/load and normalized score breakdown.",
-                "Page 9: full accuracy ranking and selection guidance.",
+                "Page 2: methodology, test conditions, and limitations.",
+                "Page 3: metrics glossary — RTF, WER, CER, VRAM.",
+                "Page 4: recommended picks with rationale.",
+                "Page 5: full leaderboard evidence table.",
+                "Pages 6-10: accuracy, speed, WER/CER, VRAM, and score charts.",
+                "Page 11: selection guidance and sign-off checklist.",
             ],
             "ASR",
             total,
+            verdict=(
+                f"Production default: {picks.get('best_for_robot_realtime', {}).get('model', '—')} "
+                f"(best accuracy/speed/VRAM blend). "
+                f"Accuracy alternative: {picks.get('best_accuracy', {}).get('model', '—')}."
+            ),
+        )
+
+        methodology_page(
+            pdf,
+            "ASR",
+            2,
+            total,
+            [
+                f"{len(lb)} models completed transcription successfully (100% success in this bake-off).",
+                "Evaluation used the shared Egyptian Arabic test clip from the ASR bake-off suite.",
+                "Whisper CT2 models use faster-whisper (CTranslate2) for lower latency and VRAM.",
+                "Hardware reference: NVIDIA T4 ≈ 14.9 GB VRAM co-residency budget for ASR+LLM+TTS.",
+            ],
+            [
+                "Robot score = 45% accuracy + 30% speed/RTF + 15% VRAM efficiency + 10% load (HIGHER better).",
+                "Accuracy % ≈ (1 − WER) × 100. CER is also reported (important for Arabic orthography).",
+                "RTF = transcribe_time / audio_duration; realtime-capable means RTF < 1.",
+                "All scores are relative within this candidate set.",
+            ],
+            [
+                "Single-clip bake-off — re-validate on your mic, noise floor, and dialect mix before freeze.",
+                "Arabic fine-tunes were competitive on speed but did not beat base Whisper Large on accuracy here.",
+                "Qwen ASR / QwenCleo underperformed badly on WER for this Egyptian Arabic clip.",
+                "WER/CER depend on reference normalization; treat absolute % as comparative, not absolute truth.",
+            ],
         )
 
         glossary_page(
             pdf,
             "ASR",
             ASR_METRICS,
-            2,
+            3,
             total,
             [
                 "For ASR: want HIGHER accuracy %, HIGHER robot score, HIGHER xRealtime;",
@@ -916,15 +1279,47 @@ def build_asr_pdf() -> Path:
                 "Voxtral-Mini has strong accuracy but HIGH VRAM — costly for co-residency.",
             ],
             "ASR",
-            3,
+            4,
             total,
         )
 
-        # P3 robot + accuracy
+        asr_headers = ["Rank", "Model", "Robot", "Acc%", "WER", "CER", "RTF", "VRAM MB"]
+        asr_rows = []
+        for i, r in enumerate(lb, start=1):
+            asr_rows.append(
+                [
+                    str(i),
+                    short(r["model"]),
+                    fmt_metric(fnum(r, "score_robot_realtime"), 1),
+                    fmt_metric(fnum(r, "avg_accuracy_percent"), 1),
+                    fmt_metric(fnum(r, "avg_wer"), 3),
+                    fmt_metric(fnum(r, "avg_cer"), 3),
+                    fmt_metric(fnum(r, "avg_rtf"), 3),
+                    fmt_metric(fnum(r, "peak_vram_mb"), 0),
+                ]
+            )
+        table_page(
+            pdf,
+            "ASR leaderboard (primary evidence table)",
+            asr_headers,
+            asr_rows,
+            [
+                "Sort key is robot realtime score (HIGHER better).",
+                "Acc% HIGHER better; WER/CER/RTF/VRAM LOWER better.",
+                "Top band is Whisper CT2 family. Bottom band (Qwen ASR/QwenCleo) is not production-ready here.",
+                "Use Acc% + RTF + VRAM together — never pick on speed alone.",
+            ],
+            "ASR",
+            5,
+            total,
+        )
+
+        # P6 robot + accuracy
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Robot score  &  Accuracy", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "ASR")
+        fig.suptitle("Robot score  &  Accuracy", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         robot = [fnum(r, "score_robot_realtime", 0) or 0 for r in lb]
         bars = ax0.barh(names[::-1], robot[::-1], color=[PALETTE[i % len(PALETTE)] for i in range(len(names))][::-1])
         ax0.set_xlabel("Robot score (0-100)  |  HIGHER better")
@@ -953,15 +1348,16 @@ def build_asr_pdf() -> Path:
                 "Bottom of the list (Qwen ASR family / QwenCleo) is too weak on accuracy for production Egyptian Arabic.",
             ],
         )
-        footer(fig, 4, total, "ASR")
+        footer(fig, 6, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P4 scatter + WER
+        # P7 scatter + WER
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Accuracy–speed tradeoff  &  WER", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "ASR")
+        fig.suptitle("Accuracy–speed tradeoff  &  WER", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         for i, r in enumerate(lb):
             x = fnum(r, "avg_rtf", 0) or 0
             y = fnum(r, "avg_accuracy_percent", 0) or 0
@@ -995,14 +1391,15 @@ def build_asr_pdf() -> Path:
                 "Voxtral is accurate but HIGH VRAM — expensive to host beside an LLM.",
             ],
         )
-        footer(fig, 5, total, "ASR")
+        footer(fig, 7, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P5 speed
+        # P8 speed + CER
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Speed metrics", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "ASR")
+        fig.suptitle("Speed metrics & Character Error Rate", fontweight="bold", color=C_NAVY, y=0.92)
         rtf = [fnum(r, "avg_rtf", 0) or 0 for r in lb]
         bars = axes[0].bar(names, rtf, color=C_BLUE)
         axes[0].axhline(1.0, color=C_RED, linestyle="--", linewidth=1, label="Realtime threshold")
@@ -1011,28 +1408,29 @@ def build_asr_pdf() -> Path:
         axes[0].legend(fontsize=8)
         bar_labels(axes[0], bars, "{:.3f}", max(rtf) * 0.02 if rtf else 0.01)
         axes[0].tick_params(axis="x", rotation=55)
-        xrt = [fnum(r, "avg_x_realtime", 0) or 0 for r in lb]
-        bars = axes[1].bar(names, xrt, color=C_TEAL)
-        axes[1].set_ylabel("x realtime  |  HIGHER better")
-        axes[1].set_title("Speedup vs audio duration (HIGHER better)")
-        bar_labels(axes[1], bars, "{:.1f}", max(xrt) * 0.02 if xrt else 0.3)
+        cer = [fnum(r, "avg_cer", 0) or 0 for r in lb]
+        bars = axes[1].bar(names, cer, color=C_PURPLE)
+        axes[1].set_ylabel("CER  |  LOWER better")
+        axes[1].set_title("Character Error Rate — key for Arabic (LOWER better)")
+        bar_labels(axes[1], bars, "{:.3f}", max(cer) * 0.02 if cer else 0.01)
         axes[1].tick_params(axis="x", rotation=55)
         insight_caption(
             fig,
-            "MMS-1B and Whisper Turbo variants are the speed leaders. Fast alone is not enough — pair speed charts with accuracy "
-            "before selecting. A very fast but low-accuracy model will force clarification loops and hurt robot UX.",
+            "RTF LOWER better (all models < 1 here). CER LOWER better — useful for Arabic where word boundaries are noisy. "
+            "Whisper-Large-v3 leads CER/WER; Turbo stays close while remaining much faster.",
         )
-        footer(fig, 6, total, "ASR")
+        footer(fig, 8, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P6 resources
+        # P9 resources
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Resources (LOWER better on both charts)", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "ASR")
+        fig.suptitle("Resources (LOWER better on both charts)", fontweight="bold", color=C_NAVY, y=0.92)
         vram = [fnum(r, "peak_vram_mb", 0) or 0 for r in lb]
         bars = axes[0].bar(names, vram, color=C_RED)
-        axes[0].axhline(14913, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ≈ 14.9 GB")
+        axes[0].axhline(T4_VRAM_MB, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ≈ 14.9 GB")
         axes[0].set_ylabel("MB  |  LOWER better")
         axes[0].set_title("Peak VRAM (LOWER better)")
         axes[0].legend(fontsize=8)
@@ -1049,14 +1447,15 @@ def build_asr_pdf() -> Path:
             "Whisper-Small is the VRAM/load champion (~1.3 GB). Whisper-Large-v3-Turbo stays under ~2.5 GB while ranking #1 on robot score — "
             "usually the best default when LLM must share the GPU. Avoid Voxtral (~11 GB) unless ASR runs alone.",
         )
-        footer(fig, 7, total, "ASR")
+        footer(fig, 9, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P7 score breakdown
+        # P10 score breakdown
         fig, ax = plt.subplots(figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Normalized score breakdown (top 6) - all HIGHER better", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "ASR")
+        fig.suptitle("Normalized score breakdown (top 6) - all HIGHER better", fontweight="bold", color=C_NAVY, y=0.92)
         top = lb[:6]
         tnames = [short(r["model"]) for r in top]
         metrics = [
@@ -1082,14 +1481,15 @@ def build_asr_pdf() -> Path:
             "Use this breakdown when two models have similar robot scores. Example: Turbo wins on speed+VRAM blend; "
             "full Large-v3 wins accuracy. Pick based on whether recognition errors or latency hurt your robot more.",
         )
-        footer(fig, 8, total, "ASR")
+        footer(fig, 10, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P8 ranking + guidance
+        # P11 ranking + guidance
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Accuracy ranking & selection guidance", fontweight="bold", color=C_NAVY, y=0.97)
-        ax = fig.add_axes([0.22, 0.40, 0.70, 0.50])
+        header_bar(fig, "ASR")
+        fig.suptitle("Accuracy ranking & selection guidance", fontweight="bold", color=C_NAVY, y=0.95)
+        ax = fig.add_axes([0.22, 0.40, 0.70, 0.48])
         if ranking:
             rnames = [short(r.get("model", "")) for r in ranking]
             racc = [fnum(r, "accuracy_percent", 0) or 0 for r in ranking]
@@ -1104,16 +1504,17 @@ def build_asr_pdf() -> Path:
             0.06,
             0.86,
             0.28,
-            "How to choose",
+            "How to choose / sign-off checklist",
             [
                 "1) Default production pick → Whisper-Large-v3-Turbo-CT2 (best robot composite).",
                 "2) If accuracy is the hard constraint → Whisper-Large-v3-CT2.",
                 "3) If GPU is tight / multi-model → Whisper-Small-CT2 (lowest VRAM, still decent).",
                 "4) Skip Qwen ASR / QwenCleo for this Egyptian Arabic use case based on current WER.",
-                "5) Re-validate on your own microphone noise and dialect samples before freeze.",
+                "5) Re-validate on your microphone noise and dialect samples before freeze.",
+                "6) Confirm combined VRAM with chosen LLM + TTS still fits the target GPU.",
             ],
         )
-        footer(fig, 9, total, "ASR")
+        footer(fig, 11, total, "ASR")
         pdf.savefig(fig)
         plt.close(fig)
 
@@ -1144,7 +1545,7 @@ def build_tts_pdf() -> Path:
     best = picks.get("best_for_robot_realtime", {})
 
     out = OUT_DIR / "TTS_Model_Selection_Report.pdf"
-    total = 9
+    total = 11
     with PdfPages(out) as pdf:
         cover(
             pdf,
@@ -1166,21 +1567,51 @@ def build_tts_pdf() -> Path:
                 f"(score {(best.get('metrics') or {}).get('score_robot_realtime', '—')}).",
             ],
             [
-                "Page 2: metrics glossary — RTF, chars/s, VRAM, and what to prefer.",
-                "Page 3: recommended picks with rationale.",
-                "Pages 4-6: robot score, RTF/throughput, and timing charts.",
-                "Pages 7-8: VRAM/load and normalized score breakdown.",
-                "Page 9: listening checklist and final selection guidance.",
+                "Page 2: methodology, what scores do/don't measure.",
+                "Page 3: metrics glossary — RTF, chars/s, VRAM.",
+                "Page 4: shortlist picks (unique roles — listen to confirm).",
+                "Page 5: full leaderboard evidence table.",
+                "Pages 6-10: robot score, RTF, timing, VRAM, score breakdown.",
+                "Page 11: listening checklist and final selection guidance.",
             ],
             "TTS",
             total,
+            verdict=(
+                f"Speed/resources default: {best.get('model', '—')} (must pass listening). "
+                "Realtime backup: SILMA-TTS. Chatterbox/NAMAA only if voice quality clearly wins and latency is acceptable."
+            ),
+        )
+
+        methodology_page(
+            pdf,
+            "TTS",
+            2,
+            total,
+            [
+                f"{ok_n}/{len(by_model)} models produced WAVs from a shared Egyptian Arabic prompt (~1693 chars).",
+                "Outputs saved beside analytics: VoiceTut, SILMA, Chatterbox, NAMAA WAVs.",
+                "Hardware reference: NVIDIA T4 ≈ 14.9 GB for co-residency with ASR + LLM.",
+                "Speaker/config notes differ per model (see per-model notes in selection report).",
+            ],
+            [
+                "Robot score blends RTF, chars/s throughput, VRAM efficiency, and load (HIGHER better).",
+                "Realtime-capable = RTF < 1 (generate time shorter than spoken audio).",
+                "Automated ranking intentionally ignores naturalness, accent, and prosody.",
+                "Listening checklist on the final page is mandatory for production freeze.",
+            ],
+            [
+                "Naturalness / Egyptian dialect / code-switch quality MUST be judged by ear.",
+                "Streaming time-to-first-audio was not measured — validate separately for production.",
+                "Scores are relative within these 4 candidates only.",
+                "A fast unnatural voice is still a failed production pick.",
+            ],
         )
 
         glossary_page(
             pdf,
             "TTS",
             TTS_METRICS,
-            2,
+            3,
             total,
             [
                 "For TTS: want LOWER RTF, LOWER generate time, LOWER VRAM/RAM, LOWER load time;",
@@ -1189,43 +1620,89 @@ def build_tts_pdf() -> Path:
             ],
         )
 
-        pick_rows = []
-        for key, label in [
-            ("best_for_robot_realtime", "Best for robot realtime (HIGHER score better)"),
-            ("best_speed", "Best speed / lowest RTF (LOWER better)"),
-            ("best_throughput", "Best throughput chars/s (HIGHER better)"),
-            ("lowest_vram", "Lowest peak VRAM (LOWER better)"),
-            ("best_balanced", "Best balanced"),
-            ("best_realtime_capable", "Best realtime-capable (prefer YES)"),
-        ]:
-            p = picks.get(key) or {}
-            metrics = p.get("metrics") or {}
-            metric_txt = "  |  ".join(f"{k}={v}" for k, v in metrics.items())
-            listen = p.get("listen_file") or ""
-            why = p.get("why", "")
-            if listen:
-                why = f"{why}  Listen: {listen}"
-            pick_rows.append((label, p.get("model", "—"), why, metric_txt))
+        # Deduplicated shortlist (VoiceTut swept automated categories)
+        silma = next((r for r in rows if "SILMA" in (r.get("model") or "")), {})
+        chatter = next((r for r in rows if "Chatterbox" in (r.get("model") or "")), {})
+        namaa = next((r for r in rows if "NAMAA" in (r.get("model") or "")), {})
+        pick_rows = [
+            (
+                "Best for robot realtime (default)",
+                best.get("model", "—"),
+                f"{best.get('why', '')} Listen: {best.get('listen_file') or 'VoiceTut-TTS.wav'}",
+                "  |  ".join(f"{k}={v}" for k, v in (best.get("metrics") or {}).items()),
+            ),
+            (
+                "Best realtime alternative",
+                silma.get("model", "SILMA-TTS"),
+                "Second on robot score; still realtime (RTF < 1). Use if VoiceTut fails the listen test.",
+                f"robot={fmt_metric(fnum(silma, 'score_robot_realtime'), 1)}  |  rtf={fmt_metric(fnum(silma, 'rtf'), 3)}  |  vram={fmt_metric(fnum(silma, 'peak_vram_mb'), 0)}",
+            ),
+            (
+                "Not recommended for live turns",
+                chatter.get("model", "Chatterbox-Multilingual-V3"),
+                "RTF > 1 (slower than realtime). Consider only if listening quality is clearly superior.",
+                f"robot={fmt_metric(fnum(chatter, 'score_robot_realtime'), 1)}  |  rtf={fmt_metric(fnum(chatter, 'rtf'), 3)}",
+            ),
+            (
+                "Not recommended for live turns",
+                namaa.get("model", "NAMAA-Egyptian-TTS"),
+                "Highest VRAM and RTF > 1. Egyptian-focused candidate — listen, but expect latency cost.",
+                f"robot={fmt_metric(fnum(namaa, 'score_robot_realtime'), 1)}  |  rtf={fmt_metric(fnum(namaa, 'rtf'), 3)}  |  vram={fmt_metric(fnum(namaa, 'peak_vram_mb'), 0)}",
+            ),
+        ]
         recommendations_page(
             pdf,
-            "Recommended picks (automated - listen to confirm)",
+            "Recommended shortlist (listen to confirm)",
             pick_rows,
             [
+                "Automated picks collapsed to unique roles — VoiceTut swept speed/VRAM/balanced categories.",
                 "Naturalness / Egyptian dialect / code-switch quality must be judged by listening to WAVs.",
-                "Automated scores only cover latency and resource fit for the robot pipeline.",
                 "RTF < 1.0 (LOWER better) is preferred for near-real-time synthesis.",
                 "For production, also measure time-to-first-audio with streaming APIs.",
             ],
             "TTS",
-            3,
+            4,
             total,
         )
 
-        # P3 robot + realtime
+        tts_headers = ["Rank", "Model", "Robot", "RTF", "xRT", "Chars/s", "Gen s", "VRAM MB", "Realtime"]
+        tts_rows = []
+        for i, r in enumerate(rows, start=1):
+            tts_rows.append(
+                [
+                    str(i),
+                    short(r.get("model", "")),
+                    fmt_metric(fnum(r, "score_robot_realtime"), 1),
+                    fmt_metric(fnum(r, "rtf"), 3),
+                    fmt_metric(fnum(r, "x_realtime"), 2),
+                    fmt_metric(fnum(r, "chars_per_second"), 1),
+                    fmt_metric(fnum(r, "generation_seconds"), 1),
+                    fmt_metric(fnum(r, "peak_vram_mb"), 0),
+                    str(r.get("realtime_capable", "—")),
+                ]
+            )
+        table_page(
+            pdf,
+            "TTS leaderboard (primary evidence table)",
+            tts_headers,
+            tts_rows,
+            [
+                "Robot score HIGHER better; RTF/Gen/VRAM LOWER better; Chars/s and xRT HIGHER better.",
+                "Realtime = yes when RTF < 1. Only VoiceTut and SILMA qualify in this bake-off.",
+                "This table is speed/resources evidence only — listening decides the final voice.",
+                "WAV files live in analytics/final/tts_outputs/.",
+            ],
+            "TTS",
+            5,
+            total,
+        )
+
+        # P6 robot + realtime
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Robot realtime score  &  Realtime capability", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "TTS")
+        fig.suptitle("Robot realtime score  &  Realtime capability", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         robot = [fnum(r, "score_robot_realtime", 0) or 0 for r in rows]
         bars = ax0.barh(names[::-1], robot[::-1], color=[PALETTE[i % len(PALETTE)] for i in range(len(names))][::-1])
         ax0.set_xlabel("Robot score (0-100)  |  HIGHER better")
@@ -1260,14 +1737,15 @@ def build_tts_pdf() -> Path:
                 "Listen before finalizing — a fast voice that sounds unnatural is still a bad production pick.",
             ],
         )
-        footer(fig, 4, total, "TTS")
+        footer(fig, 6, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P4 RTF + throughput
+        # P7 RTF + throughput
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Speed & throughput", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "TTS")
+        fig.suptitle("Speed & throughput", fontweight="bold", color=C_NAVY, y=0.92)
         rtf = [fnum(r, "rtf", 0) or 0 for r in rows]
         bars = axes[0].bar(names, rtf, color=C_BLUE)
         axes[0].axhline(1.0, color=C_RED, linestyle="--", linewidth=1, label="Realtime threshold")
@@ -1288,15 +1766,16 @@ def build_tts_pdf() -> Path:
             "VoiceTut is clearly fastest (RTF 0.157, ~83 chars/s). SILMA is a solid second. "
             "Chatterbox and NAMAA take longer than the audio they produce — weak for live robot turns.",
         )
-        footer(fig, 5, total, "TTS")
+        footer(fig, 7, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P5 gen time + xRealtime
+        # P8 gen time + xRealtime
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Generation time  &  Speedup", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "TTS")
+        fig.suptitle("Generation time  &  Speedup", fontweight="bold", color=C_NAVY, y=0.95)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         gen = [fnum(r, "generation_seconds", 0) or 0 for r in rows]
         audio = [fnum(r, "audio_seconds", 0) or 0 for r in rows]
         x = np.arange(len(names))
@@ -1332,17 +1811,18 @@ def build_tts_pdf() -> Path:
                 "Cold load time is separate — it hits startup, not every reply, if the model stays warm.",
             ],
         )
-        footer(fig, 6, total, "TTS")
+        footer(fig, 8, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P6 VRAM + load
+        # P9 VRAM + load
         fig, axes = plt.subplots(1, 2, figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Resources (LOWER better on both charts)", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "TTS")
+        fig.suptitle("Resources (LOWER better on both charts)", fontweight="bold", color=C_NAVY, y=0.92)
         vram = [fnum(r, "peak_vram_mb", 0) or 0 for r in rows]
         bars = axes[0].bar(names, vram, color=C_RED)
-        axes[0].axhline(14913, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ≈ 14.9 GB")
+        axes[0].axhline(T4_VRAM_MB, color=C_GRAY, linestyle="--", linewidth=1, label="T4 ≈ 14.9 GB")
         axes[0].set_ylabel("MB  |  LOWER better")
         axes[0].set_title("Peak VRAM (LOWER better)")
         axes[0].legend(fontsize=8)
@@ -1360,14 +1840,15 @@ def build_tts_pdf() -> Path:
             "VoiceTut uses the least peak VRAM (~3.15 GB) among OK models — best for co-residency with ASR+LLM. "
             "NAMAA is heaviest (~6.1 GB). Chatterbox loads fastest but is not realtime and uses more VRAM.",
         )
-        footer(fig, 7, total, "TTS")
+        footer(fig, 9, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P7 score breakdown
+        # P10 score breakdown
         fig, ax = plt.subplots(figsize=(11, 8.5))
-        fig.subplots_adjust(bottom=0.22, top=0.88)
-        fig.suptitle("Normalized score breakdown (all HIGHER better)", fontweight="bold", color=C_NAVY)
+        fig.subplots_adjust(bottom=0.22, top=0.86)
+        header_bar(fig, "TTS")
+        fig.suptitle("Normalized score breakdown (all HIGHER better)", fontweight="bold", color=C_NAVY, y=0.92)
         metrics = [
             ("Speed", "score_speed"),
             ("Throughput", "score_throughput"),
@@ -1391,13 +1872,14 @@ def build_tts_pdf() -> Path:
             "VoiceTut sweeps speed/throughput/VRAM/balanced. SILMA is the clear #2. "
             "Chatterbox only leads on cold-load score — not enough for live robot use. NAMAA ranks last on robot score.",
         )
-        footer(fig, 8, total, "TTS")
+        footer(fig, 10, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P8 listening + decision
+        # P11 listening + decision
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Listening checklist & how to choose", fontweight="bold", color=C_NAVY, y=0.95)
+        header_bar(fig, "TTS")
+        fig.suptitle("Listening checklist & how to choose", fontweight="bold", color=C_NAVY, y=0.94)
         draw_text_block(
             fig,
             0.07,
@@ -1421,16 +1903,17 @@ def build_tts_pdf() -> Path:
             0.08,
             0.86,
             0.42,
-            "How to choose",
+            "How to choose / sign-off checklist",
             [
                 "1) Default speed/resources pick → VoiceTut-TTS (also listen to confirm voice quality).",
                 "2) If VoiceTut fails the listen test → try SILMA-TTS next (still realtime, similar VRAM).",
                 "3) Prefer Chatterbox/NAMAA only if their voice quality is clearly superior AND latency is acceptable.",
                 "4) Confirm combined VRAM with ASR + LLM on the target GPU.",
                 "5) For production, also measure streaming time-to-first-audio (not covered in this bake-off).",
+                "6) Freeze only after two listeners agree the voice is acceptable for the robot brand.",
             ],
         )
-        footer(fig, 9, total, "TTS")
+        footer(fig, 11, total, "TTS")
         pdf.savefig(fig)
         plt.close(fig)
 
@@ -1466,7 +1949,15 @@ def build_combined_pdf() -> Path:
     )
 
     out = OUT_DIR / "Combined_Families_Summary.pdf"
-    total = 8
+    total = 9
+    # Stack VRAM budgets
+    asr_vram = fnum(asr_lb[0], "peak_vram_mb", 0) or 0 if asr_lb else 0
+    llm_speed_vram = next((fnum(r, "peak_vram_mb", 0) or 0 for r in llm_lb if r["model"] == llm_best), 0)
+    llm_qual_vram = next((fnum(r, "peak_vram_mb", 0) or 0 for r in llm_lb if r["model"] == best_q.get("model")), 0)
+    tts_vram = fnum(tts_lb[0], "peak_vram_mb", 0) or 0 if tts_lb else 0
+    stack_speed = asr_vram + llm_speed_vram + tts_vram
+    stack_qual = asr_vram + llm_qual_vram + tts_vram
+
     with PdfPages(out) as pdf:
         cover(
             pdf,
@@ -1487,14 +1978,21 @@ def build_combined_pdf() -> Path:
                 "Prefer LOWER latency/memory/error rates; prefer HIGHER accuracy/throughput/quality/robot scores.",
             ],
             [
-                "Page 2: shared metrics glossary (RTF, TTFT, WER, VRAM, ...).",
+                "Page 2: shared metrics glossary.",
                 "Page 3: shortlist table and decision path.",
-                "Page 4: family readiness and top scores.",
-                "Pages 5-7: LLM, ASR, and TTS snapshot charts.",
-                "Page 8: package contents and bottom line.",
+                "Page 4: combined GPU / VRAM stack budget (critical).",
+                "Page 5: family readiness and top scores.",
+                "Pages 6-8: LLM, ASR, and TTS snapshot charts.",
+                "Page 9: package contents and bottom line.",
             ],
             "Combined",
             total,
+            verdict=(
+                f"Recommended package: {asr_best} + {llm_best} + {tts_best} "
+                f"(~{stack_speed/1024:.1f} GB peak VRAM sum). "
+                f"Quality package: {asr_best} + {best_q.get('model', '—')} + {tts_best} "
+                f"(~{stack_qual/1024:.1f} GB). Both under T4 14.9 GB if peaks do not fully overlap."
+            ),
         )
 
         glossary_page(
@@ -1510,9 +2008,10 @@ def build_combined_pdf() -> Path:
             ],
         )
 
-        # P2 shortlist
+        # P3 shortlist
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Recommended shortlist", fontweight="bold", color=C_NAVY, y=0.95)
+        header_bar(fig, "Combined")
+        fig.suptitle("Recommended shortlist", fontweight="bold", color=C_NAVY, y=0.94)
         shortlist = [
             ("ASR — robot default", asr_best, "Best accuracy/speed/VRAM blend for realtime input"),
             ("ASR — accuracy alt", asr_acc, "Highest word accuracy when recognition quality is critical"),
@@ -1551,18 +2050,88 @@ def build_combined_pdf() -> Path:
                 "1) Lock ASR first — input quality gates the whole pipeline.",
                 "2) Lock LLM next — choose speed (Nile-Chat-4B) or quality (Qwen3-8B / Qwen3-4B).",
                 f"3) Lock TTS after listening — default {tts_best}; fallback SILMA-TTS if voice quality wins.",
-                "4) Validate the combined VRAM budget on the deployment GPU.",
+                "4) Validate the combined VRAM budget on the deployment GPU (next page).",
             ],
         )
         footer(fig, 3, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P3 readiness
+        # P4 stack VRAM budget — critical documentary page
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Family readiness & top robot scores", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "Combined")
+        fig.suptitle("Combined GPU stack budget (peak VRAM)", fontweight="bold", color=C_NAVY, y=0.94)
+        ax = fig.add_axes([0.10, 0.42, 0.55, 0.44])
+        packages = ["Speed stack", "Quality stack"]
+        asr_vals = [asr_vram / 1024, asr_vram / 1024]
+        llm_vals = [llm_speed_vram / 1024, llm_qual_vram / 1024]
+        tts_vals = [tts_vram / 1024, tts_vram / 1024]
+        x = np.arange(len(packages))
+        ax.bar(x, asr_vals, 0.55, label=f"ASR ({short(asr_best)})", color=C_TEAL)
+        ax.bar(x, llm_vals, 0.55, bottom=asr_vals, label=f"LLM", color=C_BLUE)
+        ax.bar(
+            x,
+            tts_vals,
+            0.55,
+            bottom=[a + b for a, b in zip(asr_vals, llm_vals)],
+            label=f"TTS ({short(tts_best)})",
+            color=C_PURPLE,
+        )
+        ax.axhline(T4_VRAM_MB / 1024, color=C_RED, linestyle="--", linewidth=1.5, label="T4 ≈ 14.9 GB")
+        ax.set_xticks(x)
+        ax.set_xticklabels(packages)
+        ax.set_ylabel("Peak VRAM (GB)")
+        ax.set_ylim(0, 18)
+        ax.legend(fontsize=8, loc="upper right")
+        ax.set_title("Naive peak sum (worst case if all resident)")
+
+        draw_text_block(
+            fig,
+            0.68,
+            0.42,
+            0.26,
+            0.44,
+            "Budget numbers",
+            [
+                f"ASR: {asr_vram/1024:.2f} GB",
+                f"LLM speed: {llm_speed_vram/1024:.2f} GB",
+                f"LLM quality: {llm_qual_vram/1024:.2f} GB",
+                f"TTS: {tts_vram/1024:.2f} GB",
+                "",
+                f"Speed sum: {stack_speed/1024:.2f} GB",
+                f"Quality sum: {stack_qual/1024:.2f} GB",
+                f"T4 usable: {T4_VRAM_MB/1024:.1f} GB",
+                "",
+                "Headroom is tight on speed stack.",
+                "Prefer quality LLM (int4) if co-resident.",
+            ],
+            title_color=C_AMBER,
+        )
+        draw_text_block(
+            fig,
+            0.07,
+            0.06,
+            0.86,
+            0.30,
+            "How to read the stack budget",
+            [
+                f"Speed package = {asr_best} + {llm_best} + {tts_best} ≈ {stack_speed/1024:.1f} GB peak sum.",
+                f"Quality package = {asr_best} + {best_q.get('model', '—')} + {tts_best} ≈ {stack_qual/1024:.1f} GB peak sum.",
+                "These are peak-per-family sums — true concurrent residency may be lower if models swap, but plan for the worst case.",
+                "On T4-class GPUs, prefer the quality LLM (Qwen3-8B int4) or Whisper-Small if headroom is insufficient.",
+                "Always measure actual concurrent VRAM on the deployment box before freeze.",
+            ],
+        )
+        footer(fig, 4, total, "Combined")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+        # P5 readiness
+        fig = plt.figure(figsize=(11, 8.5))
+        header_bar(fig, "Combined")
+        fig.suptitle("Family readiness & top robot scores", fontweight="bold", color=C_NAVY, y=0.94)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         families = ["LLM", "ASR", "TTS"]
         ok_counts = [len(llm_by), len(asr_lb), tts_ok]
         fail_counts = [
@@ -1610,20 +2179,21 @@ def build_combined_pdf() -> Path:
             "Readiness reading",
             [
                 "ASR is fully covered (12/12 OK). LLM has 4 OK models + 3 gated failures.",
-                f"TTS is now ready for shortlisting ({tts_ok}/{len(tts_rows)} OK) — VoiceTut leads robot score.",
+                f"TTS is ready for shortlisting ({tts_ok}/{len(tts_rows)} OK) — VoiceTut leads robot score.",
                 "All three families can be shortlisted together; only TTS still needs a human listening pass.",
-                "Plan GPU headroom for Whisper + LLM + VoiceTut/SILMA together.",
+                "Plan GPU headroom for Whisper + LLM + VoiceTut/SILMA together (see stack budget page).",
             ],
         )
-        footer(fig, 4, total, "Combined")
+        footer(fig, 5, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P4 LLM snapshot
+        # P6 LLM snapshot
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("LLM snapshot", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "Combined")
+        fig.suptitle("LLM snapshot", fontweight="bold", color=C_NAVY, y=0.94)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         names = [short(r["model"]) for r in llm_lb]
         robot = [fnum(r, "score_robot_realtime", 0) or 0 for r in llm_lb]
         qmap = {r["model"]: fnum(r, "avg_overall_score", 0) or 0 for r in llm_by}
@@ -1666,15 +2236,16 @@ def build_combined_pdf() -> Path:
                 "Qwen3-4B is the practical middle ground for many deployments.",
             ],
         )
-        footer(fig, 5, total, "Combined")
+        footer(fig, 6, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P5 ASR snapshot
+        # P7 ASR snapshot
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("ASR snapshot (top 8)", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.10, 0.40, 0.38, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "Combined")
+        fig.suptitle("ASR snapshot (top 8)", fontweight="bold", color=C_NAVY, y=0.94)
+        ax0 = fig.add_axes([0.10, 0.40, 0.38, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         top = asr_lb[:8]
         anames = [short(r["model"]) for r in top]
         bars = ax0.barh(anames[::-1], [fnum(r, "score_robot_realtime", 0) or 0 for r in top][::-1], color=C_TEAL)
@@ -1714,15 +2285,16 @@ def build_combined_pdf() -> Path:
                 "Keep ASR VRAM low so the LLM + TTS still fit on the same GPU.",
             ],
         )
-        footer(fig, 6, total, "Combined")
+        footer(fig, 7, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P6 TTS snapshot
+        # P8 TTS snapshot
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("TTS snapshot", fontweight="bold", color=C_NAVY, y=0.97)
-        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.50])
-        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.50])
+        header_bar(fig, "Combined")
+        fig.suptitle("TTS snapshot", fontweight="bold", color=C_NAVY, y=0.94)
+        ax0 = fig.add_axes([0.08, 0.40, 0.40, 0.48])
+        ax1 = fig.add_axes([0.56, 0.40, 0.40, 0.48])
         tnames = [short(r["model"]) for r in tts_lb] if tts_lb else [short(r.get("model", "")) for r in tts_rows]
         trobot = [fnum(r, "score_robot_realtime", 0) or 0 for r in (tts_lb or tts_rows)]
         bars = ax0.barh(tnames[::-1], trobot[::-1], color=[PALETTE[i % len(PALETTE)] for i in range(len(tnames))][::-1])
@@ -1765,13 +2337,14 @@ def build_combined_pdf() -> Path:
                 "Always listen to WAVs before freezing the production voice.",
             ],
         )
-        footer(fig, 7, total, "Combined")
+        footer(fig, 8, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
-        # P7 package + bottom line
+        # P9 package + bottom line
         fig = plt.figure(figsize=(11, 8.5))
-        fig.suptitle("Package contents & bottom line", fontweight="bold", color=C_NAVY, y=0.95)
+        header_bar(fig, "Combined")
+        fig.suptitle("Package contents & bottom line", fontweight="bold", color=C_NAVY, y=0.94)
         draw_text_block(
             fig,
             0.07,
@@ -1780,10 +2353,10 @@ def build_combined_pdf() -> Path:
             0.38,
             "PDF package",
             [
-                "LLM_Model_Selection_Report.pdf — charts + picks + quality guidance",
-                "ASR_Model_Selection_Report.pdf — charts + accuracy/speed guidance",
-                "TTS_Model_Selection_Report.pdf — charts + picks + listening checklist",
-                "Combined_Families_Summary.pdf — this cross-family overview",
+                "LLM_Model_Selection_Report.pdf — methodology + charts + quality guidance",
+                "ASR_Model_Selection_Report.pdf — methodology + accuracy/speed evidence",
+                "TTS_Model_Selection_Report.pdf — methodology + picks + listening checklist",
+                "Combined_Families_Summary.pdf — this cross-family overview + VRAM stack budget",
                 "",
                 "WAV files for listening: analytics/final/tts_outputs/*.wav",
             ],
@@ -1799,11 +2372,12 @@ def build_combined_pdf() -> Path:
                 f"ASR = {asr_best} (or {asr_acc} for max accuracy).",
                 f"LLM = {llm_best} (speed) or {best_q.get('model', '—')} (quality).",
                 f"TTS = {tts_best} pending listening confirmation (SILMA as backup).",
+                f"VRAM plan: speed stack ~{stack_speed/1024:.1f} GB · quality stack ~{stack_qual/1024:.1f} GB (T4 ~14.9 GB).",
                 "See family PDFs for full evidence before final sign-off.",
             ],
             title_color=C_GREEN,
         )
-        footer(fig, 8, total, "Combined")
+        footer(fig, 9, total, "Combined")
         pdf.savefig(fig)
         plt.close(fig)
 
